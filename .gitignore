@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +40,22 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Prisma generated client
+/app/generated/prisma
+
+# Docker volumes
+postgres_data/
+
+# new ignore
+FILE_TREE.txt
+SCAFFOLDING_SUMMARY.md
+MVP_STATUS.md
+MVP_COMPLETE.md
+*_COMPLETE.md
+*_SETUP.md
+TEST_*.md
+MVP_*.md
+SETUP.md
+STRIPE_TEST_GUIDE.md
+DATABASE_SCHEMA.md

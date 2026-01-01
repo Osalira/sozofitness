@@ -1,0 +1,26 @@
+# Dependencies
+node_modules
+
+# Next.js / build outputs
+.next
+out
+build
+dist
+
+# VCS
+.git
+
+# Env files (ignore all env files, but keep the example)
+.env*
+!.env.example
+
+# Prisma generated
+app/generated
+
+# Misc
+*.log
+.DS_Store
+*.pem
+.vscode
+coverage
+*.tsbuildinfo

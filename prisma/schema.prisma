@@ -1,0 +1,415 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================
+// ENUMS
+// ================================
+
+enum UserRole {
+  coach
+  client
+  admin
+}
+
+enum ProductType {
+  subscription
+  one_on_one
+}
+
+enum SubscriptionStatus {
+  active
+  past_due
+  canceled
+  incomplete
+  incomplete_expired
+  trialing
+  unpaid
+}
+
+enum EntitlementSourceType {
+  order
+  subscription
+  admin
+}
+
+enum NotificationStatus {
+  pending
+  sent
+  failed
+  skipped
+}
+
+enum NotificationChannel {
+  email
+  sms
+}
+
+// ================================
+// USER & AUTHENTICATION
+// ================================
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  email           String    @unique
+  passwordHash    String?
+  name            String?
+  role            UserRole  @default(client)
+  phoneE164       String?   @db.VarChar(20) // E.164 format: +1234567890
+  smsOptIn        Boolean   @default(false)
+  phoneVerifiedAt DateTime? // For future OTP verification
+  emailOptIn      Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  coach         Coach?
+  coachClients  CoachClient[]
+  orders        Order[]
+  subscriptions Subscription[]
+  entitlements  Entitlement[]
+  appointments  Appointment[]
+  notifications Notification[]
+
+  @@index([email])
+  @@index([role])
+}
+
+// ================================
+// COACH MANAGEMENT
+// ================================
+
+model Coach {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @unique @db.Uuid
+  bio             String?
+  stripeAccountId String?  @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clients       CoachClient[]
+  products      Product[]
+  orders        Order[]
+  subscriptions Subscription[]
+  appointments  Appointment[]
+  dailyRevenue  CoachDailyRevenue[]
+  contentItems  ContentItem[]
+  availability  CoachAvailability[]
+
+  @@index([userId])
+  @@index([stripeAccountId])
+}
+
+model CoachClient {
+  id        String   @id @default(uuid()) @db.Uuid
+  coachId   String   @db.Uuid
+  clientId  String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  // Relations
+  coach  Coach @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  client User  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([coachId, clientId])
+  @@index([coachId])
+  @@index([clientId])
+}
+
+// ================================
+// PRODUCTS & PRICING
+// ================================
+
+model Product {
+  id              String      @id @default(uuid()) @db.Uuid
+  coachId         String      @db.Uuid
+  type            ProductType
+  name            String
+  description     String?
+  isActive        Boolean     @default(true)
+  stripeProductId String?     @unique
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  coach         Coach          @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  prices        Price[]
+  orders        Order[]
+  subscriptions Subscription[]
+  contentItems  ContentItem[]
+
+  @@index([coachId])
+  @@index([type])
+  @@index([stripeProductId])
+}
+
+model Price {
+  id            String   @id @default(uuid()) @db.Uuid
+  productId     String   @db.Uuid
+  amountCents   Int
+  currency      String   @default("usd")
+  interval      String? // 'day', 'week', 'month', 'year' for subscriptions
+  intervalCount Int?     @default(1) // e.g., every 2 months
+  stripePriceId String?  @unique
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  product       Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orders        Order[]
+  subscriptions Subscription[]
+
+  @@index([productId])
+  @@index([stripePriceId])
+}
+
+// ================================
+// ORDERS & SUBSCRIPTIONS
+// ================================
+
+model Order {
+  id                      String   @id @default(uuid()) @db.Uuid
+  coachId                 String   @db.Uuid
+  clientId                String   @db.Uuid
+  productId               String   @db.Uuid
+  priceId                 String   @db.Uuid
+  amountCents             Int
+  currency                String   @default("usd")
+  stripePaymentIntentId   String?  @unique
+  stripeCheckoutSessionId String?  @unique
+  status                  String   @default("pending") // 'pending', 'completed', 'failed', 'refunded'
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  // Relations
+  coach        Coach          @relation(fields: [coachId], references: [id], onDelete: Restrict)
+  client       User           @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  product      Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+  price        Price          @relation(fields: [priceId], references: [id], onDelete: Restrict)
+  appointments Appointment[]
+
+  @@index([coachId])
+  @@index([clientId])
+  @@index([stripePaymentIntentId])
+  @@index([stripeCheckoutSessionId])
+  @@index([createdAt])
+}
+
+model Subscription {
+  id                   String             @id @default(uuid()) @db.Uuid
+  coachId              String             @db.Uuid
+  clientId             String             @db.Uuid
+  productId            String             @db.Uuid
+  priceId              String             @db.Uuid
+  stripeSubscriptionId String             @unique
+  status               SubscriptionStatus @default(incomplete)
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean            @default(false)
+  canceledAt           DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  // Relations
+  coach   Coach   @relation(fields: [coachId], references: [id], onDelete: Restrict)
+  client  User    @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  price   Price   @relation(fields: [priceId], references: [id], onDelete: Restrict)
+
+  @@index([coachId])
+  @@index([clientId])
+  @@index([stripeSubscriptionId])
+  @@index([status])
+  @@index([currentPeriodEnd])
+}
+
+// ================================
+// ENTITLEMENTS (Access Control)
+// ================================
+
+model Entitlement {
+  id         String                @id @default(uuid()) @db.Uuid
+  coachId    String                @db.Uuid
+  clientId   String                @db.Uuid
+  productId  String                @db.Uuid
+  sourceType EntitlementSourceType
+  sourceId   String                @db.Uuid // orderId or subscriptionId (polymorphic)
+  validUntil DateTime? // null = indefinite
+  isActive   Boolean               @default(true)
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+
+  // Relations
+  client User @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, productId, sourceId])
+  @@index([coachId])
+  @@index([clientId])
+  @@index([productId])
+  @@index([sourceType, sourceId])
+  @@index([validUntil])
+  @@index([isActive])
+}
+
+// ================================
+// CONTENT & MEDIA
+// ================================
+
+model ContentItem {
+  id          String   @id @default(uuid()) @db.Uuid
+  coachId     String   @db.Uuid
+  productId   String   @db.Uuid
+  title       String
+  description String?
+  mediaUrl    String? // URL to video/content (no upload in MVP)
+  mediaType   String? // 'video', 'article', 'pdf', etc.
+  publishedAt DateTime?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  coach   Coach   @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([coachId])
+  @@index([productId])
+  @@index([publishedAt])
+  @@index([isPublished])
+}
+
+// ================================
+// COACH AVAILABILITY
+// ================================
+
+model CoachAvailability {
+  id        String   @id @default(uuid()) @db.Uuid
+  coachId   String   @db.Uuid
+  dayOfWeek Int // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  startTime String // HH:mm format, e.g., "09:00"
+  endTime   String // HH:mm format, e.g., "17:00"
+  timezone  String   @default("UTC")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  coach Coach @relation(fields: [coachId], references: [id], onDelete: Cascade)
+
+  @@index([coachId])
+  @@index([dayOfWeek])
+  @@index([isActive])
+}
+
+// ================================
+// APPOINTMENTS & BOOKINGS
+// ================================
+
+model Appointment {
+  id            String   @id @default(uuid()) @db.Uuid
+  coachId       String   @db.Uuid
+  clientId      String   @db.Uuid
+  orderId       String   @db.Uuid
+  startsAt      DateTime
+  endsAt        DateTime
+  timezone      String   @default("UTC")
+  zoomMeetingId String?
+  zoomJoinUrl   String?
+  zoomHostUrl   String?
+  zoomPassword  String?
+  status        String   @default("scheduled") // 'scheduled', 'completed', 'canceled', 'no_show'
+  isRescheduled Boolean  @default(false)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  coach         Coach          @relation(fields: [coachId], references: [id], onDelete: Restrict)
+  client        User           @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  order         Order          @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  notifications Notification[]
+
+  @@index([coachId])
+  @@index([clientId])
+  @@index([orderId])
+  @@index([startsAt])
+  @@index([status])
+}
+
+// ================================
+// NOTIFICATIONS & REMINDERS
+// ================================
+
+model Notification {
+  id                String              @id @default(uuid()) @db.Uuid
+  appointmentId     String              @db.Uuid
+  userId            String              @db.Uuid
+  channel           NotificationChannel
+  toAddress         String // Email address or phone number
+  scheduledFor      DateTime
+  sentAt            DateTime?
+  status            NotificationStatus  @default(pending)
+  idempotencyKey    String              @unique // e.g., "appt:{id}:reminder:5d:email"
+  subject           String?
+  body              String?
+  errorMessage      String?
+  providerMessageId String? // Provider-specific message ID (for tracking)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  // Relations
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([appointmentId])
+  @@index([userId])
+  @@index([scheduledFor])
+  @@index([status])
+  @@index([channel])
+}
+
+// ================================
+// STRIPE WEBHOOK DEDUPLICATION
+// ================================
+
+model StripeEvent {
+  id          String   @id // Stripe event ID (e.g., evt_...)
+  type        String
+  processedAt DateTime @default(now())
+  data        Json
+
+  @@index([type])
+  @@index([processedAt])
+}
+
+// ================================
+// ANALYTICS & REPORTING
+// ================================
+
+model CoachDailyRevenue {
+  id             String   @id @default(uuid()) @db.Uuid
+  coachId        String   @db.Uuid
+  date           DateTime @db.Date
+  revenueCents   Int      @default(0)
+  orderCount     Int      @default(0)
+  newClientCount Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  coach Coach @relation(fields: [coachId], references: [id], onDelete: Cascade)
+
+  @@unique([coachId, date])
+  @@index([coachId])
+  @@index([date])
+}
