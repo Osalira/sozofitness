@@ -1,0 +1,20 @@
+# Dedicated worker image (runs `npm run worker`)
+# Uses tsx at runtime (included as a devDependency) for simplicity.
+
+FROM node:20-bookworm-slim AS worker
+WORKDIR /app
+
+# Install dependencies (includes devDependencies so `tsx` is available)
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Copy source
+COPY . .
+
+# Prisma client
+RUN npx prisma generate
+
+ENV NODE_ENV=production
+CMD ["npm","run","worker"]
+
+

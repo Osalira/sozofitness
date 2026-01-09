@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -145,6 +146,7 @@ model Product {
   prices        Price[]
   orders        Order[]
   subscriptions Subscription[]
+  entitlements  Entitlement[]
   contentItems  ContentItem[]
 
   @@index([coachId])
@@ -250,7 +252,8 @@ model Entitlement {
   updatedAt  DateTime              @updatedAt
 
   // Relations
-  client User @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client  User    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([clientId, productId, sourceId])
   @@index([coachId])

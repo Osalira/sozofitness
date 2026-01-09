@@ -1,20 +1,34 @@
+# ---------- deps ----------
 FROM node:20-bookworm-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 
-FROM node:20-bookworm-slim AS build
+# ---------- builder ----------
+FROM node:20-bookworm-slim AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# If you use Prisma, this is usually needed:
+
+# Prisma (safe even if you don't need it; remove if you want)
 RUN npx prisma generate
+
+# Build Next.js (expects output: "standalone" in next.config.ts)
 RUN npm run build
 
-FROM node:20-bookworm-slim AS run
+# ---------- runner ----------
+FROM node:20-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
-COPY --from=build /app ./
+
+# Fix Prisma/OpenSSL warning
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
+# Copy standalone output
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
 EXPOSE 3000
-CMD ["npm","run","start"]
+CMD ["node", "server.js"]
