@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { SignOutButton } from "@/components/ui/SignOutButton";
+import { useTranslations } from "@/lib/i18n/client";
 
 interface CoachNavProps {
   userName?: string | null;
@@ -11,15 +14,16 @@ interface CoachNavProps {
 }
 
 export function CoachNav({ userName, userEmail }: CoachNavProps) {
+  const t = useTranslations();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
   const navLinks = [
-    { href: "/coach", label: "Dashboard" },
-    { href: "/coach/products", label: "Products" },
-    { href: "/coach/content", label: "Content" },
-    { href: "/coach/appointments", label: "Appointments" },
-    { href: "/settings", label: "Settings" },
+    { href: "/coach", label: t("nav.dashboard") },
+    { href: "/coach/products", label: t("nav.products") },
+    { href: "/coach/content", label: t("nav.content") },
+    { href: "/coach/appointments", label: t("nav.appointments") },
+    { href: "/settings", label: t("nav.settings") },
   ];
 
   const isActive = (href: string) => {
@@ -62,14 +66,16 @@ export function CoachNav({ userName, userEmail }: CoachNavProps) {
             <span className="text-sm text-muted-foreground truncate max-w-[150px]">
               {userName || userEmail}
             </span>
+            <LanguageSwitcher />
             <ThemeToggle />
-            <Link href="/api/auth/signout" className="text-sm text-primary hover:text-primary/90">
-              Sign out
-            </Link>
+            <SignOutButton className="text-sm text-primary hover:text-primary/90">
+              {t("nav.signOut")}
+            </SignOutButton>
           </div>
 
           {/* Mobile Menu Button */}
           <div className="flex items-center gap-2 md:hidden">
+            <LanguageSwitcher />
             <ThemeToggle />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -124,13 +130,9 @@ export function CoachNav({ userName, userEmail }: CoachNavProps) {
                   {userName || userEmail}
                 </p>
               </div>
-              <Link
-                href="/api/auth/signout"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-base font-medium text-primary hover:bg-accent"
-              >
-                Sign out
-              </Link>
+              <SignOutButton className="block w-full text-left px-3 py-2 text-base font-medium text-primary hover:bg-accent">
+                {t("nav.signOut")}
+              </SignOutButton>
             </div>
           </div>
         )}

@@ -88,31 +88,32 @@ export class EmailSender {
     productName: string;
     zoomJoinUrl?: string | null;
     timeUntil: string; // "5 days" or "24 hours"
+    locale?: "en" | "fr"; // User's preferred locale
   }): Promise<SendEmailResult> {
-    const { to, recipientName, coachName, appointmentTime, productName, zoomJoinUrl, timeUntil } =
-      params;
+    const {
+      to,
+      recipientName,
+      coachName,
+      appointmentTime,
+      productName,
+      zoomJoinUrl,
+      timeUntil,
+      locale = "en",
+    } = params;
 
-    const subject = `Reminder: Your coaching session in ${timeUntil}`;
+    // Use localized email template
+    const { getAppointmentReminderEmail } = await import("@/lib/i18n/email-templates");
+    const { subject, text, html } = getAppointmentReminderEmail({
+      locale,
+      recipientName,
+      coachName,
+      appointmentTime,
+      productName,
+      zoomJoinUrl,
+      timeUntil,
+    });
 
-    const text = `Hi ${recipientName},
-
-This is a reminder that you have a coaching session coming up in ${timeUntil}.
-
-Session Details:
-- Coach: ${coachName}
-- Product: ${productName}
-- Time: ${appointmentTime}
-${zoomJoinUrl ? `\nZoom Meeting Link:\n${zoomJoinUrl}` : "\n(Meeting link will be provided by your coach)"}
-
-Looking forward to seeing you there!
-
-Best regards,
-SOZOFITNESS Team
-
----
-To manage your notification preferences, visit your account settings.`;
-
-    return await this.send({ to, subject, text });
+    return await this.send({ to, subject, text, html });
   }
 }
 

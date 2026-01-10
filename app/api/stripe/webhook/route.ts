@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { StripeService } from "@/lib/services/stripe-service";
 import { RevenueService } from "@/lib/services/revenue-service";
+import { logger } from "@/lib/logger";
 import Stripe from "stripe";
 import { ProductType, SubscriptionStatus, EntitlementSourceType } from "@prisma/client";
 
@@ -20,13 +21,13 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get("stripe-signature");
 
     if (!signature) {
-      console.error("❌ No stripe-signature header");
+      logger.error("No stripe-signature header");
       return NextResponse.json({ error: "No signature" }, { status: 400 });
     }
 
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!webhookSecret) {
-      console.error("❌ STRIPE_WEBHOOK_SECRET not configured");
+      logger.error("STRIPE_WEBHOOK_SECRET not configured");
       return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
     }
 
@@ -35,11 +36,14 @@ export async function POST(req: NextRequest) {
     try {
       event = StripeService.verifyWebhookSignature(body, signature, webhookSecret);
     } catch (err) {
-      console.error("❌ Webhook signature verification failed:", err);
+      logger.error("Webhook signature verification failed", err);
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
-    console.log(`📥 Received Stripe webhook: ${event.type} (${event.id})`);
+    logger.info("Received Stripe webhook", {
+      eventType: event.type,
+      eventId: event.id,
+    });
 
     // Check if we've already processed this event (idempotency)
     const existingEvent = await prisma.stripeEvent.findUnique({
@@ -47,7 +51,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingEvent) {
-      console.log(`✓ Event ${event.id} already processed, skipping`);
+      logger.info("Event already processed, skipping", { eventId: event.id });
       return NextResponse.json({ received: true, skipped: true }, { status: 200 });
     }
 
@@ -89,12 +93,12 @@ export async function POST(req: NextRequest) {
         break;
 
       default:
-        console.log(`ℹ️  Unhandled event type: ${event.type}`);
+        logger.info("Unhandled event type", { eventType: event.type });
     }
 
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (error) {
-    console.error("❌ Webhook processing error:", error);
+    logger.error("Webhook processing error", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Webhook processing failed" },
       { status: 500 }
@@ -107,18 +111,27 @@ export async function POST(req: NextRequest) {
  * Create Order/Subscription and grant Entitlement
  */
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  console.log(`Processing checkout.session.completed: ${session.id}`);
+  logger.info("Processing checkout.session.completed", {
+    sessionId: session.id,
+  });
 
   const metadata = session.metadata;
   if (!metadata) {
-    console.error("No metadata in checkout session");
+    logger.error("No metadata in checkout session", undefined, { sessionId: session.id });
     return;
   }
 
   const { userId, productId, priceId, coachId, productType } = metadata;
 
   if (!userId || !productId || !priceId || !coachId || !productType) {
-    console.error("Missing required metadata:", metadata);
+    logger.error("Missing required metadata", undefined, {
+      sessionId: session.id,
+      hasUserId: !!userId,
+      hasProductId: !!productId,
+      hasPriceId: !!priceId,
+      hasCoachId: !!coachId,
+      hasProductType: !!productType,
+    });
     return;
   }
 
@@ -129,7 +142,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   });
 
   if (!price) {
-    console.error(`Price ${priceId} not found`);
+    logger.error("Price not found", undefined, { priceId });
     return;
   }
 
@@ -178,7 +191,7 @@ async function handleOneTimePayment(
     },
   });
 
-  console.log(`✅ Created Order: ${order.id}`);
+  logger.info("Created Order", { orderId: order.id, userId, productId });
 
   // Grant Entitlement (indefinite for one-time purchases)
   const entitlement = await prisma.entitlement.create({
@@ -193,7 +206,11 @@ async function handleOneTimePayment(
     },
   });
 
-  console.log(`✅ Granted Entitlement: ${entitlement.id}`);
+  logger.info("Granted Entitlement", {
+    entitlementId: entitlement.id,
+    userId,
+    productId,
+  });
 
   // Create CoachClient relationship
   await prisma.coachClient.upsert({
@@ -210,13 +227,13 @@ async function handleOneTimePayment(
     update: {},
   });
 
-  console.log(`✅ Updated coach-client relationship`);
+  logger.info("Updated coach-client relationship", { coachId, userId });
 
   // Update daily revenue aggregation
   try {
     await RevenueService.updateDailyRevenue(coachId, new Date(), order.amountCents);
   } catch (error) {
-    console.error("Failed to update daily revenue:", error);
+    logger.error("Failed to update daily revenue", error, { coachId, orderId: order.id });
     // Don't fail the order if revenue update fails
   }
 
@@ -235,7 +252,7 @@ async function handleSubscriptionPayment(
   const { userId, productId, priceId, coachId, price } = data;
 
   if (!session.subscription) {
-    console.error("No subscription ID in session");
+    logger.error("No subscription ID in session", undefined, { sessionId: session.id });
     return;
   }
 
@@ -270,7 +287,11 @@ async function handleSubscriptionPayment(
     },
   });
 
-  console.log(`✅ Created/Updated Subscription: ${subscription.id}`);
+  logger.info("Created/Updated Subscription", {
+    subscriptionId: subscription.id,
+    userId,
+    productId,
+  });
 
   // Grant Entitlement (valid until period end)
   // Avoid relying on a compound-unique Prisma client type that may be stale in-editor.
@@ -302,7 +323,7 @@ async function handleSubscriptionPayment(
     });
   }
 
-  console.log(`✅ Granted Subscription Entitlement`);
+  logger.info("Granted Subscription Entitlement", { userId, productId });
 
   // Create coach-client relationship
   await prisma.coachClient.upsert({
@@ -324,7 +345,7 @@ async function handleSubscriptionPayment(
  * Handle subscription updates
  */
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
-  console.log(`Processing subscription update: ${subscription.id}`);
+  logger.info("Processing subscription update", { subscriptionId: subscription.id });
 
   const subAny = subscription as any;
   await prisma.subscription.update({
@@ -360,14 +381,14 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     });
   }
 
-  console.log(`✅ Updated subscription and entitlement`);
+  logger.info("Updated subscription and entitlement", { subscriptionId: subscription.id });
 }
 
 /**
  * Handle subscription deletion
  */
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  console.log(`Processing subscription deletion: ${subscription.id}`);
+  logger.info("Processing subscription deletion", { subscriptionId: subscription.id });
 
   await prisma.subscription.update({
     where: { stripeSubscriptionId: subscription.id },
@@ -394,14 +415,14 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     });
   }
 
-  console.log(`✅ Canceled subscription and expired entitlement`);
+  logger.info("Canceled subscription and expired entitlement", { subscriptionId: subscription.id });
 }
 
 /**
  * Handle invoice paid (for subscription renewals)
  */
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
-  console.log(`Processing invoice.paid: ${invoice.id}`);
+  logger.info("Processing invoice.paid", { invoiceId: invoice.id });
 
   const subscriptionRef = (invoice as any)?.parent?.subscription_details?.subscription;
   const subscriptionId =
@@ -424,7 +445,9 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
           isActive: true,
         },
       });
-      console.log(`✅ Extended entitlement for subscription renewal`);
+      logger.info("Extended entitlement for subscription renewal", {
+        subscriptionId: sub.id,
+      });
     }
   }
 }
@@ -433,7 +456,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
  * Handle invoice payment failed
  */
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
-  console.log(`Processing invoice.payment_failed: ${invoice.id}`);
+  logger.info("Processing invoice.payment_failed", { invoiceId: invoice.id });
 
   const subscriptionRef = (invoice as any)?.parent?.subscription_details?.subscription;
   const subscriptionId =
@@ -446,7 +469,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
         status: SubscriptionStatus.past_due,
       },
     });
-    console.log(`✅ Marked subscription as past_due`);
+    logger.info("Marked subscription as past_due", { subscriptionId });
   }
 }
 
@@ -454,7 +477,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
  * Handle charge refunded
  */
 async function handleChargeRefunded(charge: Stripe.Charge) {
-  console.log(`Processing charge.refunded: ${charge.id}`);
+  logger.info("Processing charge.refunded", { chargeId: charge.id });
 
   // Find order by payment intent
   const order = await prisma.order.findFirst({
@@ -476,6 +499,6 @@ async function handleChargeRefunded(charge: Stripe.Charge) {
       data: { isActive: false },
     });
 
-    console.log(`✅ Refunded order and expired entitlement`);
+    logger.info("Refunded order and expired entitlement", { orderId: order.id });
   }
 }

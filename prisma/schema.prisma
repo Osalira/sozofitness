@@ -42,6 +42,12 @@ enum EntitlementSourceType {
   admin
 }
 
+enum FeedbackCategory {
+  bug
+  feature
+  other
+}
+
 enum NotificationStatus {
   pending
   sent
@@ -68,6 +74,7 @@ model User {
   smsOptIn        Boolean   @default(false)
   phoneVerifiedAt DateTime? // For future OTP verification
   emailOptIn      Boolean   @default(true)
+  preferredLocale String    @default("en") @db.VarChar(5) // "en" or "fr"
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -79,6 +86,7 @@ model User {
   entitlements  Entitlement[]
   appointments  Appointment[]
   notifications Notification[]
+  feedback      Feedback[]
 
   @@index([email])
   @@index([role])
@@ -415,4 +423,26 @@ model CoachDailyRevenue {
   @@unique([coachId, date])
   @@index([coachId])
   @@index([date])
+}
+
+// ================================
+// FEEDBACK & SUPPORT
+// ================================
+
+model Feedback {
+  id        String            @id @default(uuid()) @db.Uuid
+  userId    String            @db.Uuid
+  role      UserRole // Snapshot of user role at time of feedback
+  pagePath  String // URL path where feedback was submitted
+  message   String            @db.Text
+  category  FeedbackCategory? @default(other)
+  rating    Int? // 1-5 rating (optional)
+  createdAt DateTime          @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([category])
 }

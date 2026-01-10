@@ -1,6 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "@/lib/i18n/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface User {
   id: string;
@@ -10,14 +15,17 @@ interface User {
   smsOptIn: boolean;
   phoneVerifiedAt: string | null;
   emailOptIn: boolean;
+  preferredLocale: string;
 }
 
 export function SettingsForm() {
+  const t = useTranslations();
   const [user, setUser] = useState<User | null>(null);
   const [name, setName] = useState("");
   const [phoneE164, setPhoneE164] = useState("");
   const [smsOptIn, setSmsOptIn] = useState(false);
   const [emailOptIn, setEmailOptIn] = useState(true);
+  const [preferredLocale, setPreferredLocale] = useState("en");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -38,6 +46,7 @@ export function SettingsForm() {
         setPhoneE164(data.user.phoneE164 || "");
         setSmsOptIn(data.user.smsOptIn);
         setEmailOptIn(data.user.emailOptIn);
+        setPreferredLocale(data.user.preferredLocale || "en");
       }
     } catch (err) {
       setError("Failed to load settings");
@@ -61,6 +70,7 @@ export function SettingsForm() {
           phoneE164: phoneE164.trim() || undefined,
           smsOptIn,
           emailOptIn,
+          preferredLocale,
         }),
       });
 
@@ -71,7 +81,7 @@ export function SettingsForm() {
       }
 
       setUser(data.user);
-      setSuccess("Settings updated successfully!");
+      setSuccess(t("settings.settingsUpdated"));
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update settings");
@@ -81,7 +91,7 @@ export function SettingsForm() {
   };
 
   if (loading) {
-    return <div className="text-center py-8 text-muted-foreground">Loading...</div>;
+    return <div className="text-center py-8 text-muted-foreground">{t("common.loading")}</div>;
   }
 
   const showSmsWarning = smsOptIn && !phoneE164.trim();
@@ -90,55 +100,66 @@ export function SettingsForm() {
     <div className="bg-card rounded-lg shadow-md p-6 sm:p-8 border border-border">
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="bg-destructive/10 border border-destructive rounded-md p-4">
-            <p className="text-base text-destructive">{error}</p>
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         {success && (
-          <div className="bg-accent border border-accent rounded-md p-4">
-            <p className="text-base text-accent-foreground">{success}</p>
-          </div>
+          <Alert>
+            <AlertDescription>{success}</AlertDescription>
+          </Alert>
         )}
 
         {/* Profile Section */}
         <div>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Profile</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">{t("settings.profile")}</h2>
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-base font-medium text-foreground mb-2">
-                Email
-              </label>
-              <input
+              <Label htmlFor="email">{t("settings.email")}</Label>
+              <Input
                 id="email"
                 type="email"
                 value={user?.email}
                 disabled
-                className="w-full px-4 py-3 text-base border border-input rounded-md bg-muted text-muted-foreground"
+                className="bg-muted"
               />
-              <p className="mt-1 text-sm text-muted-foreground">Email cannot be changed</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("settings.emailCannotChange")}</p>
             </div>
 
             <div>
-              <label htmlFor="name" className="block text-base font-medium text-foreground mb-2">
-                Name
-              </label>
-              <input
+              <Label htmlFor="name">{t("settings.name")}</Label>
+              <Input
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 text-base border border-input bg-background text-foreground placeholder:text-muted-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                placeholder="Your name"
+                placeholder={t("settings.yourName")}
               />
+            </div>
+
+            <div>
+              <Label htmlFor="preferredLocale">{t("settings.preferredLanguage")}</Label>
+              <select
+                id="preferredLocale"
+                value={preferredLocale}
+                onChange={(e) => setPreferredLocale(e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <option value="en">{t("settings.english")}</option>
+                <option value="fr">{t("settings.french")}</option>
+              </select>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {t("settings.languageDesc")}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Notification Preferences */}
         <div className="border-t border-border pt-6">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Notification Preferences</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">{t("settings.notificationPreferences")}</h2>
 
           <div className="space-y-4">
             {/* Email Opt-In */}
@@ -152,29 +173,26 @@ export function SettingsForm() {
               />
               <label htmlFor="emailOptIn" className="ml-3">
                 <span className="block text-base font-medium text-foreground">
-                  Email Notifications
+                  {t("settings.emailNotifications")}
                 </span>
                 <span className="block text-sm text-muted-foreground mt-1">
-                  Receive appointment reminders and updates via email
+                  {t("settings.emailNotificationsDesc")}
                 </span>
               </label>
             </div>
 
             {/* Phone Number */}
             <div>
-              <label htmlFor="phoneE164" className="block text-base font-medium text-foreground mb-2">
-                Phone Number
-              </label>
-              <input
+              <Label htmlFor="phoneE164">{t("settings.phoneNumber")}</Label>
+              <Input
                 id="phoneE164"
                 type="tel"
                 value={phoneE164}
                 onChange={(e) => setPhoneE164(e.target.value)}
-                className="w-full px-4 py-3 text-base border border-input bg-background text-foreground placeholder:text-muted-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="+16045551234"
               />
               <p className="mt-2 text-sm text-muted-foreground">
-                E.164 format required: +[country code][number] (e.g., +16045551234 for US/Canada)
+                {t("settings.phoneFormat")}
               </p>
             </div>
 
@@ -188,74 +206,72 @@ export function SettingsForm() {
                 className="h-5 w-5 mt-0.5 text-primary focus:ring-ring border-input rounded"
               />
               <label htmlFor="smsOptIn" className="ml-3">
-                <span className="block text-base font-medium text-foreground">SMS Notifications</span>
+                <span className="block text-base font-medium text-foreground">{t("settings.smsNotifications")}</span>
                 <span className="block text-sm text-muted-foreground mt-1">
-                  Receive appointment reminders via text message
+                  {t("settings.smsNotificationsDesc")}
                 </span>
               </label>
             </div>
 
             {showSmsWarning && (
-              <div className="bg-accent border border-accent rounded-md p-4">
-                <div className="flex">
-                  <svg
-                    className="w-5 h-5 text-accent-foreground mt-0.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                    />
-                  </svg>
-                  <div className="ml-3">
-                    <p className="text-base font-medium text-accent-foreground">Phone number required</p>
-                    <p className="text-sm text-accent-foreground mt-1">
-                      SMS notifications are enabled but no phone number is set. Please add your
-                      phone number above.
-                    </p>
+              <Alert>
+                <AlertDescription>
+                  <div className="flex items-start gap-2">
+                    <svg
+                      className="w-5 h-5 text-warning flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                    <div>
+                      <p className="font-medium">{t("settings.phoneRequired")}</p>
+                      <p className="text-sm mt-1">
+                        {t("settings.phoneRequiredDesc")}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </AlertDescription>
+              </Alert>
             )}
           </div>
         </div>
 
         {/* Save Button */}
         <div className="pt-6 border-t border-border">
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full sm:w-auto px-6 py-3 text-base bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-          >
-            {saving ? "Saving..." : "Save Changes"}
-          </button>
+          <Button type="submit" disabled={saving} size="lg">
+            {saving ? t("settings.saving") : t("settings.saveChanges")}
+          </Button>
         </div>
       </form>
 
       {/* Information Box */}
       <div className="mt-6 bg-primary/10 border border-primary rounded-lg p-4">
-        <h3 className="text-base font-semibold text-primary mb-2">About Notifications</h3>
+        <h3 className="text-base font-semibold text-primary mb-2">{t("settings.aboutNotifications")}</h3>
         <ul className="text-sm text-muted-foreground space-y-1">
-          <li>• You'll receive reminders 5 days and 24 hours before appointments</li>
-          <li>• SMS reminders include meeting links for quick access</li>
-          <li>• Reply STOP to any SMS to opt out</li>
-          <li>• Email notifications are sent to {user?.email}</li>
+          <li>• {t("settings.aboutNotificationsDesc.0")}</li>
+          <li>• {t("settings.aboutNotificationsDesc.1")}</li>
+          <li>• {t("settings.aboutNotificationsDesc.2")}</li>
+          <li>• {t("settings.aboutNotificationsDesc.3", { email: user?.email || "" })}</li>
         </ul>
       </div>
 
       {/* Dev Test Buttons */}
-      {process.env.NODE_ENV !== "production" && (
+      {/* {process.env.NODE_ENV !== "production" && (
         <div className="mt-6 bg-muted border border-border rounded-lg p-4">
           <h3 className="text-base font-semibold text-foreground mb-3">
-            Test Notifications (Dev Only)
+            {t("settings.testNotifications")}
           </h3>
           <div className="flex flex-col sm:flex-row gap-3">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={async () => {
                 try {
                   const res = await fetch("/api/dev/test-email", { method: "POST" });
@@ -269,12 +285,12 @@ export function SettingsForm() {
                   alert("❌ Failed to send test email");
                 }
               }}
-              className="px-4 py-2 text-sm bg-card border border-input rounded-md hover:bg-accent font-medium"
             >
-              Send Test Email
-            </button>
-            <button
+              {t("settings.sendTestEmail")}
+            </Button>
+            <Button
               type="button"
+              variant="outline"
               onClick={async () => {
                 if (!user?.smsOptIn || !user?.phoneE164) {
                   alert("❌ Enable SMS and add phone number first");
@@ -292,13 +308,12 @@ export function SettingsForm() {
                   alert("❌ Failed to send test SMS");
                 }
               }}
-              className="px-4 py-2 text-sm bg-card border border-input rounded-md hover:bg-accent font-medium"
             >
-              Send Test SMS
-            </button>
+              {t("settings.sendTestSms")}
+            </Button>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

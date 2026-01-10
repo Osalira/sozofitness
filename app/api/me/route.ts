@@ -54,7 +54,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { phoneE164, smsOptIn, emailOptIn, name } = body;
+    const { phoneE164, smsOptIn, emailOptIn, name, preferredLocale } = body;
 
     const updateData: any = {};
 
@@ -86,6 +86,13 @@ export async function PATCH(req: NextRequest) {
     // Update email opt-in if provided
     if (emailOptIn !== undefined) {
       updateData.emailOptIn = emailOptIn;
+    }
+
+    // Update preferred locale if provided
+    if (preferredLocale !== undefined) {
+      if (preferredLocale === "en" || preferredLocale === "fr") {
+        updateData.preferredLocale = preferredLocale;
+      }
     }
 
     const user = await prisma.user.update({

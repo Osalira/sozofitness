@@ -4,8 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { useTranslations } from "@/lib/i18n/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function SignupPage() {
+  const t = useTranslations();
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -21,12 +27,12 @@ export default function SignupPage() {
 
     // Validation
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(t("auth.passwordsDoNotMatch"));
       return;
     }
 
     if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+      setError(t("auth.passwordTooShort"));
       return;
     }
 
@@ -73,25 +79,24 @@ export default function SignupPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h1 className="text-center text-3xl font-extrabold text-foreground">SOZOFITNESS</h1>
-          <h2 className="mt-6 text-center text-2xl font-bold text-foreground">Create your account</h2>
+          <h2 className="mt-6 text-center text-2xl font-bold text-foreground">
+            {t("auth.createAccount")}
+          </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="rounded-md bg-destructive/10 border border-destructive p-4">
-              <p className="text-sm text-destructive">{error}</p>
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-foreground">
-                Name
-              </label>
-              <input
+              <Label htmlFor="name">{t("auth.name")}</Label>
+              <Input
                 id="name"
                 name="name"
                 type="text"
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-input placeholder:text-muted-foreground text-foreground bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
                 placeholder="Your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -99,16 +104,13 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground">
-                Email address
-              </label>
-              <input
+              <Label htmlFor="email">{t("auth.email")}</Label>
+              <Input
                 id="email"
                 name="email"
                 type="email"
                 autoComplete="email"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-input placeholder:text-muted-foreground text-foreground bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -116,16 +118,13 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground">
-                Password
-              </label>
-              <input
+              <Label htmlFor="password">{t("auth.password")}</Label>
+              <Input
                 id="password"
                 name="password"
                 type="password"
                 autoComplete="new-password"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-input placeholder:text-muted-foreground text-foreground bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
                 placeholder="At least 8 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -133,16 +132,13 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground">
-                Confirm Password
-              </label>
-              <input
+              <Label htmlFor="confirmPassword">{t("auth.confirmPassword")}</Label>
+              <Input
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
                 autoComplete="new-password"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-input placeholder:text-muted-foreground text-foreground bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
                 placeholder="Repeat password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -150,36 +146,30 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-foreground">
-                I am a...
-              </label>
+              <Label htmlFor="role">{t("auth.iAmA")}</Label>
               <select
                 id="role"
                 name="role"
-                className="mt-1 block w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring sm:text-sm"
+                className="mt-1 flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 value={role}
                 onChange={(e) => setRole(e.target.value as "client" | "coach")}
               >
-                <option value="client">Client</option>
-                <option value="coach">Coach</option>
+                <option value="client">{t("auth.client")}</option>
+                <option value="coach">{t("auth.coach")}</option>
               </select>
             </div>
           </div>
 
           <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? "Creating account..." : "Sign up"}
-            </button>
+            <Button type="submit" disabled={loading} size="lg" className="w-full">
+              {loading ? t("auth.creatingAccount") : t("auth.signUp")}
+            </Button>
           </div>
 
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">Already have an account? </span>
+            <span className="text-muted-foreground">{t("auth.alreadyHaveAccount")} </span>
             <Link href="/login" className="font-medium text-primary hover:text-primary/90">
-              Sign in
+              {t("auth.signIn")}
             </Link>
           </div>
         </form>

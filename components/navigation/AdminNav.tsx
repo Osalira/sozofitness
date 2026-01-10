@@ -4,7 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { SignOutButton } from "@/components/ui/SignOutButton";
 import { Badge } from "@/components/ui/badge";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { useTranslations } from "@/lib/i18n/client";
 
 interface AdminNavProps {
   userName?: string | null;
@@ -12,13 +15,15 @@ interface AdminNavProps {
 }
 
 export function AdminNav({ userName, userEmail }: AdminNavProps) {
+  const t = useTranslations();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
   const navLinks = [
-    { href: "/admin", label: "Dashboard" },
-    { href: "/admin/users", label: "Users" },
-    { href: "/admin/stripe-events", label: "Stripe Events" },
+    { href: "/admin", label: t("nav.dashboard") },
+    { href: "/admin/users", label: t("nav.users") },
+    { href: "/admin/stripe-events", label: t("nav.stripeEvents") },
+    { href: "/admin/feedback", label: "Feedback" },
   ];
 
   const isActive = (href: string) => {
@@ -59,13 +64,15 @@ export function AdminNav({ userName, userEmail }: AdminNavProps) {
             <span className="text-sm text-muted-foreground truncate max-w-[150px]">
               {userName || userEmail}
             </span>
+            <LanguageSwitcher />
             <ThemeToggle />
-            <Link href="/api/auth/signout" className="text-sm text-primary hover:text-primary/90">
-              Sign out
-            </Link>
+            <SignOutButton className="text-sm text-primary hover:text-primary/90">
+              {t("nav.signOut")}
+            </SignOutButton>
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
+            <LanguageSwitcher />
             <ThemeToggle />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -119,13 +126,9 @@ export function AdminNav({ userName, userEmail }: AdminNavProps) {
                   {userName || userEmail}
                 </p>
               </div>
-              <Link
-                href="/api/auth/signout"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-base font-medium text-primary hover:bg-accent"
-              >
-                Sign out
-              </Link>
+              <SignOutButton className="block w-full text-left px-3 py-2 text-base font-medium text-primary hover:bg-accent">
+                {t("nav.signOut")}
+              </SignOutButton>
             </div>
           </div>
         )}

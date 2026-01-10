@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { UserRole } from "@prisma/client";
+import { logger } from "@/lib/logger";
+
+// 🔒 SECURITY: Industry standard bcrypt cost factor (2026)
+const BCRYPT_ROUNDS = 12;
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,11 +30,15 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingUser) {
-      return NextResponse.json({ error: "User already exists" }, { status: 400 });
+      // 🔒 SECURITY: Generic error to prevent user enumeration
+      return NextResponse.json(
+        { error: "Unable to create account. Please try a different email or contact support." },
+        { status: 400 }
+      );
     }
 
-    // Hash password
-    const passwordHash = await bcrypt.hash(password, 10);
+    // 🔒 SECURITY: Hash password with strong cost factor
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
     // Create user (role defaults to 'client' if not specified)
     const user = await prisma.user.create({
@@ -57,9 +65,16 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // 🔒 SECURITY: Log without PII
+    logger.info("User created successfully", {
+      userId: user.id,
+      role: user.role,
+    });
+
     return NextResponse.json({ message: "User created successfully", user }, { status: 201 });
   } catch (error) {
-    console.error("Signup error:", error);
+    // 🔒 SECURITY: Log error without exposing sensitive data
+    logger.error("Signup error", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

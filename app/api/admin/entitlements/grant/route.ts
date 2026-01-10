@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { UserRole, EntitlementSourceType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/admin/entitlements/grant
@@ -60,13 +61,18 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log(
-      `✅ Admin ${session.user.email} granted entitlement ${entitlement.id} to user ${user.email}`
-    );
+    // 🔒 SECURITY: Log without PII (use IDs instead of emails)
+    logger.info("Admin granted entitlement", {
+      adminId: session.user.id,
+      entitlementId: entitlement.id,
+      userId: user.id,
+      productId: product.id,
+    });
 
     return NextResponse.json({ entitlement }, { status: 201 });
   } catch (error) {
-    console.error("Grant entitlement error:", error);
+    // 🔒 SECURITY: Log error without sensitive data
+    logger.error("Grant entitlement error", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Internal server error" },
       { status: 500 }

@@ -59,6 +59,16 @@ export const authOptions: AuthOptions = {
           throw new Error("Invalid email or password");
         }
 
+        // 🔒 SECURITY: Auto-upgrade weak password hashes
+        const currentRounds = bcrypt.getRounds(user.passwordHash);
+        if (currentRounds < 12) {
+          const newHash = await bcrypt.hash(credentials.password, 12);
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { passwordHash: newHash },
+          });
+        }
+
         // Return user object that will be stored in JWT
         return {
           id: user.id,
@@ -71,6 +81,20 @@ export const authOptions: AuthOptions = {
   ],
   session: {
     strategy: "jwt",
+    maxAge: 7 * 24 * 60 * 60, // 🔒 SECURITY: 7 days (was infinite)
+    updateAge: 24 * 60 * 60, // 🔒 SECURITY: Refresh token daily if active
+  },
+  // 🔒 SECURITY: Secure cookie configuration
+  cookies: {
+    sessionToken: {
+      name: `${process.env.NODE_ENV === "production" ? "__Secure-" : ""}next-auth.session-token`,
+      options: {
+        httpOnly: true, // Prevent XSS access to cookie
+        sameSite: "lax", // CSRF protection (strict breaks OAuth)
+        path: "/",
+        secure: process.env.NODE_ENV === "production", // HTTPS only in production
+      },
+    },
   },
   pages: {
     signIn: "/login",

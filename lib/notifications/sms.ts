@@ -97,17 +97,21 @@ export class SmsSender {
     appointmentTime: string;
     zoomJoinUrl?: string | null;
     timeUntil: string; // "5 days" or "24 hours"
+    locale?: "en" | "fr"; // User's preferred locale
   }): Promise<SendSmsResult> {
-    const { to, recipientName, coachName, appointmentTime, zoomJoinUrl, timeUntil } = params;
+    const { to, recipientName, coachName, appointmentTime, zoomJoinUrl, timeUntil, locale = "en" } =
+      params;
 
-    // Keep SMS short (160 chars ideal, 320 max for compatibility)
-    let message = `Hi ${recipientName}, reminder: Coaching session with ${coachName} in ${timeUntil} at ${appointmentTime}.`;
-
-    if (zoomJoinUrl) {
-      message += ` Join: ${zoomJoinUrl}`;
-    }
-
-    message += ` Reply STOP to opt out.`;
+    // Use localized SMS template
+    const { getAppointmentReminderSms } = await import("@/lib/i18n/sms-templates");
+    const message = getAppointmentReminderSms({
+      locale,
+      recipientName,
+      coachName,
+      appointmentTime,
+      zoomJoinUrl,
+      timeUntil,
+    });
 
     return await this.send({ to, message });
   }

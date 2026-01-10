@@ -150,6 +150,13 @@ export class NotificationService {
     const hoursUntil = (appointment.startsAt.getTime() - Date.now()) / (1000 * 60 * 60);
     const timeUntil = hoursUntil > 48 ? "5 days" : "24 hours";
 
+    // Get user's preferred locale from database
+    const client = await prisma.user.findUnique({
+      where: { id: notification.userId },
+      select: { preferredLocale: true },
+    });
+    const userLocale = (client?.preferredLocale === "fr" ? "fr" : "en") as "en" | "fr";
+
     try {
       let result;
 
@@ -162,6 +169,7 @@ export class NotificationService {
           productName,
           zoomJoinUrl: appointment.zoomJoinUrl,
           timeUntil,
+          locale: userLocale,
         });
       } else if (notification.channel === NotificationChannel.sms) {
         // Only send if user still has SMS opted in
@@ -184,6 +192,7 @@ export class NotificationService {
           appointmentTime,
           zoomJoinUrl: appointment.zoomJoinUrl,
           timeUntil,
+          locale: userLocale,
         });
       } else {
         throw new Error(`Unknown notification channel: ${notification.channel}`);

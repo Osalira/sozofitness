@@ -71,3 +71,31 @@ export async function isAuthenticated() {
   const user = await getCurrentUser();
   return !!user;
 }
+
+/**
+ * Sanitize callback URL to prevent open redirects
+ * 🔒 SECURITY: Only allows same-origin URLs
+ */
+export function sanitizeCallbackUrl(url: string | null, defaultUrl = "/app"): string {
+  if (!url) return defaultUrl;
+
+  try {
+    const allowedOrigins = [
+      "https://mysozofitness.com",
+      "http://localhost:3000", // Development
+    ];
+
+    const parsed = new URL(url, allowedOrigins[0]);
+
+    // Only allow same-origin URLs
+    if (!allowedOrigins.includes(parsed.origin)) {
+      console.warn(`[Security] Blocked open redirect attempt to ${parsed.origin}`);
+      return defaultUrl;
+    }
+
+    return parsed.pathname + parsed.search;
+  } catch {
+    // Invalid URL format
+    return defaultUrl;
+  }
+}
