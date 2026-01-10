@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { Badge } from "@/components/ui/badge";
 
 interface AdminNavProps {
   userName?: string | null;
@@ -28,12 +29,13 @@ export function AdminNav({ userName, userEmail }: AdminNavProps) {
   };
 
   return (
-    <nav className="bg-card shadow-sm border-b-2 border-destructive">
+    <nav className="bg-card shadow-sm border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link href="/admin" className="text-lg sm:text-xl font-bold text-destructive">
-              ADMIN
+            <Link href="/admin" className="flex items-center gap-2">
+              <span className="text-lg sm:text-xl font-bold text-foreground">SOZOFITNESS</span>
+              <Badge variant="warning" className="text-xs">ADMIN</Badge>
             </Link>
 
             <div className="hidden md:flex md:ml-8 md:space-x-6">
@@ -43,7 +45,7 @@ export function AdminNav({ userName, userEmail }: AdminNavProps) {
                   href={link.href}
                   className={`text-sm ${
                     isActive(link.href)
-                      ? "text-destructive font-medium"
+                      ? "text-primary font-medium"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -58,7 +60,7 @@ export function AdminNav({ userName, userEmail }: AdminNavProps) {
               {userName || userEmail}
             </span>
             <ThemeToggle />
-            <Link href="/api/auth/signout" className="text-sm text-destructive hover:text-destructive/90">
+            <Link href="/api/auth/signout" className="text-sm text-primary hover:text-primary/90">
               Sign out
             </Link>
           </div>
@@ -68,6 +70,7 @@ export function AdminNav({ userName, userEmail }: AdminNavProps) {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-muted-foreground hover:text-foreground p-2"
+              aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,7 +105,7 @@ export function AdminNav({ userName, userEmail }: AdminNavProps) {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 text-base font-medium ${
                     isActive(link.href)
-                      ? "text-destructive bg-destructive/10"
+                      ? "text-primary bg-accent"
                       : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   }`}
                 >
@@ -119,7 +122,7 @@ export function AdminNav({ userName, userEmail }: AdminNavProps) {
               <Link
                 href="/api/auth/signout"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-base font-medium text-destructive hover:bg-accent"
+                className="block px-3 py-2 text-base font-medium text-primary hover:bg-accent"
               >
                 Sign out
               </Link>

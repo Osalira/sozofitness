@@ -271,15 +271,17 @@ export function ProductList() {
         onSuccess={handleProductCreated}
       />
 
-      <AddPriceModal
-        product={selectedProduct!}
-        open={showAddPriceModal && !!selectedProduct}
-        onOpenChange={(open) => {
-          setShowAddPriceModal(open);
-          if (!open) setSelectedProduct(null);
-        }}
-        onSuccess={handlePriceAdded}
-      />
+      {selectedProduct && (
+        <AddPriceModal
+          product={selectedProduct}
+          open={showAddPriceModal}
+          onOpenChange={(open) => {
+            setShowAddPriceModal(open);
+            if (!open) setSelectedProduct(null);
+          }}
+          onSuccess={handlePriceAdded}
+        />
+      )}
     </div>
   );
 }
