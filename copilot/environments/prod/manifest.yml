@@ -12,9 +12,12 @@ type: Environment
 #     id:
 
 # Configure the load balancers in your environment, once created.
-# http:
-#   public:
-#   private:
+http:
+  public:
+    # ACM certificate(s) must be in the SAME region as the environment (us-west-2).
+    # This enables HTTPS and is required for `http.alias` on services.
+    certificates:
+      - arn:aws:acm:us-west-2:641579938888:certificate/1509849a-03b5-4408-b7ba-c6fe5c96e886
 
 # Configure observability for your environment resources.
 observability:

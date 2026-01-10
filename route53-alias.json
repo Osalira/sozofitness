@@ -1,0 +1,29 @@
+{
+  "Comment": "Point mysozofitness.com to Copilot ALB",
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "mysozofitness.com.",
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": "Z1H1FL5HABSF5",
+          "DNSName": "sozofi-Publi-QPPZK3uVBr7D-1470687586.us-west-2.elb.amazonaws.com.",
+          "EvaluateTargetHealth": false
+        }
+      }
+    },
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "www.mysozofitness.com.",
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": "Z1H1FL5HABSF5",
+          "DNSName": "sozofi-Publi-QPPZK3uVBr7D-1470687586.us-west-2.elb.amazonaws.com.",
+          "EvaluateTargetHealth": false
+        }
+      }
+    }
+  ]
+}

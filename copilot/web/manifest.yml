@@ -11,6 +11,11 @@ http:
   # Requests to this path will be forwarded to your service.
   # To match all requests you can use the "/" path.
   path: "/"
+  # Custom domains (requires the domain's DNS to be hosted in Route 53).
+  # If your domain is registered elsewhere (e.g. Namecheap), point its nameservers to the Route 53 hosted zone.
+  alias:
+    - mysozofitness.com
+    - www.mysozofitness.com
   # Added healthcheck path
   healthcheck:
     path: "/api/health"
@@ -46,13 +51,21 @@ network:
 variables:
   HOSTNAME: "0.0.0.0"
   PORT: "3000"
-  NEXTAUTH_URL: "http://sozofi-Publi-QPPZK3uVBr7D-1470687586.us-west-2.elb.amazonaws.com"
+  # Use your final public URL so auth + Stripe redirects work correctly.
+  # Previous ALB URL (http). Keep for reference only:
+  # NEXTAUTH_URL: "http://sozofi-Publi-QPPZK3uVBr7D-1470687586.us-west-2.elb.amazonaws.com"
+  NEXTAUTH_URL: "https://mysozofitness.com"
 
 secrets:
   NEXTAUTH_SECRET: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/NEXTAUTH_SECRET
   DATABASE_URL: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DATABASE_URL
   STRIPE_SECRET_KEY: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/STRIPE_SECRET_KEY
   STRIPE_WEBHOOK_SECRET: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/STRIPE_WEBHOOK_SECRET
+  ZOOM_ACCOUNT_ID: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/ZOOM_ACCOUNT_ID
+  ZOOM_CLIENT_ID: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/ZOOM_CLIENT_ID
+  ZOOM_CLIENT_SECRET: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/ZOOM_CLIENT_SECRET
+  ZOOM_SECRET_TOKEN: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/ZOOM_SECRET_TOKEN
+  # Note: SendGrid/Twilio are configured on the separate `worker` service, not `web`.
 # You can override any of the values defined above by environment.
 #environments:
 #  test:
