@@ -16,35 +16,35 @@ export default async function AdminDashboard() {
   ]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <AdminNav userName={session.user.name} userEmail={session.user.email} />
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Console</h1>
-            <p className="mt-2 text-sm sm:text-base text-gray-600">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Admin Console</h1>
+            <p className="mt-2 text-sm sm:text-base text-muted-foreground">
               System administration and user management
             </p>
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Total Users</h3>
-              <p className="text-3xl font-bold text-gray-900">{userCount}</p>
+            <div className="bg-card rounded-lg shadow border border-border p-6">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Users</h3>
+              <p className="text-3xl font-bold text-foreground">{userCount}</p>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Completed Orders</h3>
-              <p className="text-3xl font-bold text-blue-600">{orderCount}</p>
+            <div className="bg-card rounded-lg shadow border border-border p-6">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Completed Orders</h3>
+              <p className="text-3xl font-bold text-primary">{orderCount}</p>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Active Subscriptions</h3>
-              <p className="text-3xl font-bold text-green-600">{subscriptionCount}</p>
+            <div className="bg-card rounded-lg shadow border border-border p-6">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Active Subscriptions</h3>
+              <p className="text-3xl font-bold text-green-600 dark:text-green-400">{subscriptionCount}</p>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Stripe Events</h3>
-              <p className="text-3xl font-bold text-purple-600">{eventCount}</p>
+            <div className="bg-card rounded-lg shadow border border-border p-6">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Stripe Events</h3>
+              <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{eventCount}</p>
             </div>
           </div>
 
@@ -52,25 +52,25 @@ export default async function AdminDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Link
               href="/admin/users"
-              className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
+              className="bg-card rounded-lg shadow border border-border p-6 hover:shadow-md transition-shadow"
             >
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">User Search</h3>
-              <p className="text-sm text-gray-600">Search users and manage entitlements</p>
+              <h3 className="text-lg font-semibold text-foreground mb-2">User Search</h3>
+              <p className="text-sm text-muted-foreground">Search users and manage entitlements</p>
             </Link>
 
             <Link
               href="/admin/stripe-events"
-              className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
+              className="bg-card rounded-lg shadow border border-border p-6 hover:shadow-md transition-shadow"
             >
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Stripe Events</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="text-lg font-semibold text-foreground mb-2">Stripe Events</h3>
+              <p className="text-sm text-muted-foreground">
                 View recent webhook events and processing status
               </p>
             </Link>
 
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">System Health</h3>
-              <p className="text-sm text-gray-600">All systems operational ✅</p>
+            <div className="bg-card rounded-lg shadow border border-border p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-2">System Health</h3>
+              <p className="text-sm text-muted-foreground">All systems operational ✅</p>
             </div>
           </div>
         </div>

@@ -50,15 +50,15 @@ export default async function ClientContentPage({ params }: ContentPageProps) {
     });
 
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <ClientNav userName={session.user.name} userEmail={session.user.email} />
 
         <main className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="bg-card rounded-lg shadow-lg p-8 text-center border border-border">
             <div className="mb-6">
-              <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
+              <div className="mx-auto w-16 h-16 bg-accent rounded-full flex items-center justify-center">
                 <svg
-                  className="w-10 h-10 text-yellow-600"
+                  className="w-10 h-10 text-accent-foreground"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -73,27 +73,27 @@ export default async function ClientContentPage({ params }: ContentPageProps) {
               </div>
             </div>
 
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Subscribe to Access Content</h1>
-            <p className="text-gray-600 mb-8">
+            <h1 className="text-2xl font-bold text-foreground mb-4">Subscribe to Access Content</h1>
+            <p className="text-muted-foreground mb-8">
               You need an active subscription to access content from{" "}
               <span className="font-semibold">{coach.user.name || "this coach"}</span>.
             </p>
 
             {products.length > 0 && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Available Subscriptions:</h3>
+                <h3 className="text-lg font-semibold text-foreground">Available Subscriptions:</h3>
                 {products.map((product) => (
                   <Link
                     key={product.id}
                     href={`/p/${product.id}`}
-                    className="block border border-gray-300 rounded-lg p-6 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                    className="block border border-input rounded-lg p-6 hover:border-primary hover:bg-accent transition-colors"
                   >
-                    <h4 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h4>
+                    <h4 className="text-lg font-semibold text-foreground mb-2">{product.name}</h4>
                     {product.description && (
-                      <p className="text-sm text-gray-600 mb-3">{product.description}</p>
+                      <p className="text-sm text-muted-foreground mb-3">{product.description}</p>
                     )}
                     {product.prices[0] && (
-                      <p className="text-xl font-bold text-blue-600">
+                      <p className="text-xl font-bold text-primary">
                         ${(product.prices[0].amountCents / 100).toFixed(2)}
                         {product.prices[0].interval && `/${product.prices[0].interval}`}
                       </p>
@@ -104,7 +104,7 @@ export default async function ClientContentPage({ params }: ContentPageProps) {
             )}
 
             <div className="mt-8">
-              <Link href="/client" className="text-sm text-gray-600 hover:text-gray-900 underline">
+              <Link href="/client" className="text-sm text-muted-foreground hover:text-foreground underline">
                 ← Back to Dashboard
               </Link>
             </div>
@@ -118,36 +118,36 @@ export default async function ClientContentPage({ params }: ContentPageProps) {
   const content = await EntitlementService.getClientAccessibleContent(session.user.id, coachId);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <ClientNav userName={session.user.name} userEmail={session.user.email} />
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               Content from {coach.user.name || "Coach"}
             </h1>
-            <p className="text-gray-600">Access your exclusive content library</p>
+            <p className="text-muted-foreground">Access your exclusive content library</p>
           </div>
 
           {content.length === 0 ? (
-            <div className="bg-white rounded-lg shadow p-8 text-center">
-              <p className="text-gray-600 mb-4">
+            <div className="bg-card rounded-lg shadow p-8 text-center border border-border">
+              <p className="text-muted-foreground mb-4">
                 No content has been published yet. Check back soon!
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Your coach will add videos and materials here as they become available.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {content.map((item) => (
-                <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div key={item.id} className="bg-card rounded-lg shadow-md overflow-hidden border border-border">
                   {item.mediaUrl && (
-                    <div className="bg-gray-200 h-48 flex items-center justify-center">
+                    <div className="bg-muted h-48 flex items-center justify-center">
                       {item.mediaType === "video" ? (
                         <svg
-                          className="w-16 h-16 text-gray-400"
+                          className="w-16 h-16 text-muted-foreground"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -167,7 +167,7 @@ export default async function ClientContentPage({ params }: ContentPageProps) {
                         </svg>
                       ) : (
                         <svg
-                          className="w-16 h-16 text-gray-400"
+                          className="w-16 h-16 text-muted-foreground"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -185,13 +185,13 @@ export default async function ClientContentPage({ params }: ContentPageProps) {
 
                   <div className="p-6">
                     <div className="mb-3">
-                      <span className="text-xs text-gray-500">{item.product.name}</span>
+                      <span className="text-xs text-muted-foreground">{item.product.name}</span>
                     </div>
 
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">{item.title}</h3>
 
                     {item.description && (
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-3">{item.description}</p>
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{item.description}</p>
                     )}
 
                     {item.mediaUrl && (
@@ -199,14 +199,14 @@ export default async function ClientContentPage({ params }: ContentPageProps) {
                         href={item.mediaUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-center font-medium transition-colors"
+                        className="block w-full bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 text-center font-medium transition-colors"
                       >
                         {item.mediaType === "video" ? "Watch Video" : "View Content"} →
                       </a>
                     )}
 
                     {item.publishedAt && (
-                      <p className="text-xs text-gray-500 mt-4">
+                      <p className="text-xs text-muted-foreground mt-4">
                         Published {new Date(item.publishedAt).toLocaleDateString()}
                       </p>
                     )}

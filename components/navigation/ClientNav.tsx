@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface ClientNavProps {
   userName?: string | null;
@@ -15,6 +16,7 @@ export function ClientNav({ userName, userEmail }: ClientNavProps) {
 
   const navLinks = [
     { href: "/client", label: "Dashboard" },
+    { href: "/discover", label: "Discover" },
     { href: "/client/access", label: "My Access" },
     { href: "/client/appointments", label: "Appointments" },
     { href: "/settings", label: "Settings" },
@@ -28,12 +30,12 @@ export function ClientNav({ userName, userEmail }: ClientNavProps) {
   };
 
   return (
-    <nav className="bg-white shadow-sm">
+    <nav className="bg-card border-b border-border shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo and Desktop Nav */}
           <div className="flex items-center">
-            <Link href="/client" className="text-lg sm:text-xl font-bold text-gray-900">
+            <Link href="/client" className="text-lg sm:text-xl font-bold text-foreground">
               SOZOFITNESS
             </Link>
 
@@ -45,8 +47,8 @@ export function ClientNav({ userName, userEmail }: ClientNavProps) {
                   href={link.href}
                   className={`text-sm ${
                     isActive(link.href)
-                      ? "text-blue-600 font-medium"
-                      : "text-gray-600 hover:text-gray-900"
+                      ? "text-primary font-medium"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {link.label}
@@ -57,19 +59,21 @@ export function ClientNav({ userName, userEmail }: ClientNavProps) {
 
           {/* Desktop User Menu */}
           <div className="hidden md:flex md:items-center md:space-x-4">
-            <span className="text-sm text-gray-700 truncate max-w-[150px]">
+            <span className="text-sm text-muted-foreground truncate max-w-[150px]">
               {userName || userEmail}
             </span>
-            <Link href="/api/auth/signout" className="text-sm text-blue-600 hover:text-blue-500">
+            <ThemeToggle />
+            <Link href="/api/auth/signout" className="text-sm text-primary hover:text-primary/90">
               Sign out
             </Link>
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="flex items-center md:hidden">
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-gray-600 hover:text-gray-900 p-2"
+              className="text-muted-foreground hover:text-foreground p-2"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
@@ -97,7 +101,7 @@ export function ClientNav({ userName, userEmail }: ClientNavProps) {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 pb-3">
+          <div className="md:hidden border-t border-border pb-3">
             <div className="pt-2 pb-3 space-y-1">
               {navLinks.map((link) => (
                 <Link
@@ -106,24 +110,24 @@ export function ClientNav({ userName, userEmail }: ClientNavProps) {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 text-base font-medium ${
                     isActive(link.href)
-                      ? "text-blue-600 bg-blue-50"
-                      : "text-gray-600 hover:bg-gray-50"
+                      ? "text-primary bg-accent"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   }`}
                 >
                   {link.label}
                 </Link>
               ))}
             </div>
-            <div className="pt-3 border-t border-gray-200">
+            <div className="pt-3 border-t border-border">
               <div className="px-3 py-2">
-                <p className="text-sm text-gray-900 font-medium truncate">
+                <p className="text-sm text-foreground font-medium truncate">
                   {userName || userEmail}
                 </p>
               </div>
               <Link
                 href="/api/auth/signout"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-base font-medium text-blue-600 hover:bg-gray-50"
+                className="block px-3 py-2 text-base font-medium text-primary hover:bg-accent"
               >
                 Sign out
               </Link>

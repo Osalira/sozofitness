@@ -89,13 +89,13 @@ export function BookingCalendar({ orderId, coachId }: BookingCalendarProps) {
   return (
     <div className="space-y-6">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-base text-red-800">{error}</p>
+        <div className="bg-destructive/10 border border-destructive rounded-md p-4">
+          <p className="text-base text-destructive">{error}</p>
         </div>
       )}
 
       <div>
-        <label htmlFor="date" className="block text-base font-medium text-gray-900 mb-3">
+        <label htmlFor="date" className="block text-base font-medium text-foreground mb-3">
           Select Date
         </label>
         <select
@@ -105,7 +105,7 @@ export function BookingCalendar({ orderId, coachId }: BookingCalendarProps) {
             setSelectedDate(e.target.value);
             setSelectedTime(""); // Reset time when date changes
           }}
-          className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-3 text-base border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
           required
         >
           <option value="">Choose a date...</option>
@@ -127,7 +127,7 @@ export function BookingCalendar({ orderId, coachId }: BookingCalendarProps) {
 
       {selectedDate && (
         <div>
-          <label htmlFor="time" className="block text-base font-medium text-gray-900 mb-3">
+          <label htmlFor="time" className="block text-base font-medium text-foreground mb-3">
             Select Time
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -138,22 +138,22 @@ export function BookingCalendar({ orderId, coachId }: BookingCalendarProps) {
                 onClick={() => setSelectedTime(time)}
                 className={`px-4 py-3 text-base font-medium rounded-md border-2 transition-colors ${
                   selectedTime === time
-                    ? "border-blue-600 bg-blue-50 text-blue-900"
-                    : "border-gray-300 hover:border-gray-400 text-gray-700"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-input hover:border-border text-foreground"
                 }`}
               >
                 {time}
               </button>
             ))}
           </div>
-          <p className="mt-3 text-sm text-gray-600">
+          <p className="mt-3 text-sm text-muted-foreground">
             Times shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
           </p>
         </div>
       )}
 
       <div>
-        <label htmlFor="notes" className="block text-base font-medium text-gray-900 mb-2">
+        <label htmlFor="notes" className="block text-base font-medium text-foreground mb-2">
           Notes (Optional)
         </label>
         <textarea
@@ -161,7 +161,7 @@ export function BookingCalendar({ orderId, coachId }: BookingCalendarProps) {
           rows={3}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-3 text-base border border-input bg-background text-foreground placeholder:text-muted-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
           placeholder="Any specific topics or questions you'd like to cover?"
         />
       </div>
@@ -170,18 +170,18 @@ export function BookingCalendar({ orderId, coachId }: BookingCalendarProps) {
         <button
           onClick={handleBook}
           disabled={loading || !selectedDate || !selectedTime}
-          className="w-full bg-blue-600 text-white px-6 py-4 text-base sm:text-lg rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+          className="w-full bg-primary text-primary-foreground px-6 py-4 text-base sm:text-lg rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
         >
           {loading ? "Booking..." : "Confirm Booking"}
         </button>
       </div>
 
       {selectedDate && selectedTime && (
-        <div className="bg-green-50 border border-green-200 rounded-md p-4">
-          <p className="text-base text-green-900 font-medium">
+        <div className="bg-accent border border-accent rounded-md p-4">
+          <p className="text-base text-accent-foreground font-medium">
             📅 Your session will be scheduled for:
           </p>
-          <p className="text-base text-green-800 mt-1">
+          <p className="text-base text-accent-foreground mt-1">
             {new Date(`${selectedDate}T${selectedTime}`).toLocaleString("en-US", {
               weekday: "long",
               month: "long",

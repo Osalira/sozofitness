@@ -72,15 +72,15 @@ export function ContentList() {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="text-gray-600">Loading content...</div>
+        <div className="text-muted-foreground">Loading content...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">{error}</p>
+      <div className="bg-destructive/10 border border-destructive rounded-lg p-4">
+        <p className="text-destructive">{error}</p>
       </div>
     );
   }
@@ -90,18 +90,18 @@ export function ContentList() {
       <div className="mb-6">
         <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+          className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
         >
           + Add Content
         </button>
       </div>
 
       {content.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <p className="text-gray-600 mb-4">You haven't created any content yet.</p>
+        <div className="bg-card rounded-lg shadow p-8 text-center border border-border">
+          <p className="text-muted-foreground mb-4">You haven't created any content yet.</p>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="text-blue-600 hover:text-blue-500 font-medium"
+            className="text-primary hover:text-primary/90 font-medium"
           >
             Add your first content item →
           </button>
@@ -109,33 +109,33 @@ export function ContentList() {
       ) : (
         <div className="space-y-4">
           {content.map((item) => (
-            <div key={item.id} className="bg-white rounded-lg shadow-md p-6">
+            <div key={item.id} className="bg-card rounded-lg shadow-md p-6 border border-border">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-xl font-semibold text-gray-900">{item.title}</h3>
+                    <h3 className="text-xl font-semibold text-foreground">{item.title}</h3>
                     {item.isPublished ? (
-                      <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
+                      <span className="text-xs px-2 py-1 rounded-full bg-accent text-accent-foreground">
                         Published
                       </span>
                     ) : (
-                      <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-800">
+                      <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
                         Draft
                       </span>
                     )}
                     {item.mediaType && (
-                      <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                      <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
                         {item.mediaType}
                       </span>
                     )}
                   </div>
 
-                  <p className="text-sm text-gray-600 mb-2">
+                  <p className="text-sm text-muted-foreground mb-2">
                     Product: <span className="font-medium">{item.product.name}</span>
                   </p>
 
                   {item.description && (
-                    <p className="text-gray-600 text-sm mb-3">{item.description}</p>
+                    <p className="text-muted-foreground text-sm mb-3">{item.description}</p>
                   )}
 
                   {item.mediaUrl && (
@@ -143,14 +143,14 @@ export function ContentList() {
                       href={item.mediaUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:text-blue-500 font-medium"
+                      className="text-sm text-primary hover:text-primary/90 font-medium"
                     >
                       View Media →
                     </a>
                   )}
 
                   {item.publishedAt && (
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs text-muted-foreground mt-2">
                       Published: {new Date(item.publishedAt).toLocaleDateString()}
                     </p>
                   )}
@@ -160,8 +160,8 @@ export function ContentList() {
                   onClick={() => togglePublish(item.id, item.isPublished)}
                   className={`ml-4 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     item.isPublished
-                      ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      : "bg-green-600 text-white hover:bg-green-700"
+                      ? "bg-muted text-muted-foreground hover:bg-muted/80"
+                      : "bg-accent text-accent-foreground hover:bg-accent/80"
                   }`}
                 >
                   {item.isPublished ? "Unpublish" : "Publish"}
@@ -172,12 +172,11 @@ export function ContentList() {
         </div>
       )}
 
-      {showCreateModal && (
-        <CreateContentModal
-          onClose={() => setShowCreateModal(false)}
-          onSuccess={handleContentCreated}
-        />
-      )}
+      <CreateContentModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        onSuccess={handleContentCreated}
+      />
     </div>
   );
 }

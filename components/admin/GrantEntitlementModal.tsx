@@ -1,6 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 interface Product {
   id: string;
@@ -16,14 +28,16 @@ interface Product {
 interface GrantEntitlementModalProps {
   userId: string;
   userEmail: string;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }
 
 export function GrantEntitlementModal({
   userId,
   userEmail,
-  onClose,
+  open,
+  onOpenChange,
   onSuccess,
 }: GrantEntitlementModalProps) {
   const [products, setProducts] = useState<Product[]>([]);
@@ -33,8 +47,10 @@ export function GrantEntitlementModal({
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    if (open) {
+      fetchProducts();
+    }
+  }, [open]);
 
   const fetchProducts = async () => {
     try {
@@ -73,7 +89,11 @@ export function GrantEntitlementModal({
         throw new Error(data.error || "Failed to grant entitlement");
       }
 
+      toast.success("Entitlement granted successfully!");
       onSuccess();
+      onOpenChange(false);
+      // Reset form
+      setValidityDays("365");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to grant entitlement");
       setLoading(false);
@@ -81,42 +101,30 @@ export function GrantEntitlementModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 sm:p-8 my-8 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Grant Entitlement</h2>
-            <p className="text-sm text-gray-600 mt-1">For: {userEmail}</p>
-          </div>
-          <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Grant Entitlement</DialogTitle>
+          <DialogDescription>For: {userEmail}</DialogDescription>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-3">
-              <p className="text-base text-red-800">{error}</p>
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
-          <div>
-            <label htmlFor="productId" className="block text-base font-medium text-gray-900 mb-2">
-              Product *
-            </label>
+          <div className="space-y-2">
+            <Label htmlFor="productId">
+              Product <span className="text-destructive">*</span>
+            </Label>
             <select
               id="productId"
               value={productId}
               onChange={(e) => setProductId(e.target.value)}
               required
-              className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {products.map((product) => (
                 <option key={product.id} value={product.id}>
@@ -126,18 +134,13 @@ export function GrantEntitlementModal({
             </select>
           </div>
 
-          <div>
-            <label
-              htmlFor="validityDays"
-              className="block text-base font-medium text-gray-900 mb-2"
-            >
-              Validity Period
-            </label>
+          <div className="space-y-2">
+            <Label htmlFor="validityDays">Validity Period</Label>
             <select
               id="validityDays"
               value={validityDays}
               onChange={(e) => setValidityDays(e.target.value)}
-              className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="">Indefinite (no expiration)</option>
               <option value="7">7 days</option>
@@ -147,32 +150,23 @@ export function GrantEntitlementModal({
             </select>
           </div>
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-            <p className="text-sm text-yellow-800">
+          <Alert>
+            <AlertDescription>
               ⚠️ <strong>Warning:</strong> This will grant immediate access to the product. Source
               type will be "admin" and bypass payment.
-            </p>
-          </div>
+            </AlertDescription>
+          </Alert>
 
-          <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="w-full sm:flex-1 px-6 py-3 text-base border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 font-medium"
-            >
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !productId}
-              className="w-full sm:flex-1 px-6 py-3 text-base bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-            >
+            </Button>
+            <Button type="submit" disabled={loading || !productId}>
               {loading ? "Granting..." : "Grant Access"}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

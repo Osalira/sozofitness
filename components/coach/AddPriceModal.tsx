@@ -2,6 +2,19 @@
 
 import { useState } from "react";
 import { ProductType } from "@prisma/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 interface Product {
   id: string;
@@ -11,11 +24,12 @@ interface Product {
 
 interface AddPriceModalProps {
   product: Product;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }
 
-export function AddPriceModal({ product, onClose, onSuccess }: AddPriceModalProps) {
+export function AddPriceModal({ product, open, onOpenChange, onSuccess }: AddPriceModalProps) {
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState("usd");
   const [interval, setInterval] = useState("month");
@@ -60,7 +74,14 @@ export function AddPriceModal({ product, onClose, onSuccess }: AddPriceModalProp
         throw new Error(data.error || "Failed to add price");
       }
 
+      toast.success("Price added successfully!");
       onSuccess();
+      onOpenChange(false);
+      // Reset form
+      setAmount("");
+      setCurrency("usd");
+      setInterval("month");
+      setIntervalCount("1");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add price");
       setLoading(false);
@@ -68,46 +89,29 @@ export function AddPriceModal({ product, onClose, onSuccess }: AddPriceModalProp
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 sm:p-8 my-8 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Add Price</h2>
-            <p className="text-base text-gray-600">
-              For <span className="font-semibold">{product.name}</span>
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 p-1"
-            aria-label="Close"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Add Price</DialogTitle>
+          <DialogDescription>
+            For <span className="font-semibold">{product.name}</span>
+          </DialogDescription>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-3">
-              <p className="text-base text-red-800">{error}</p>
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
-          <div>
-            <label htmlFor="amount" className="block text-base font-medium text-gray-900 mb-2">
-              Price Amount *
-            </label>
+          <div className="space-y-2">
+            <Label htmlFor="amount">
+              Price Amount <span className="text-destructive">*</span>
+            </Label>
             <div className="relative">
-              <span className="absolute left-4 top-3.5 text-gray-500 text-base">$</span>
-              <input
+              <span className="absolute left-3 top-2 text-muted-foreground">$</span>
+              <Input
                 id="amount"
                 type="number"
                 step="0.01"
@@ -115,21 +119,19 @@ export function AddPriceModal({ product, onClose, onSuccess }: AddPriceModalProp
                 required
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="pl-7"
                 placeholder="0.00"
               />
             </div>
           </div>
 
-          <div>
-            <label htmlFor="currency" className="block text-base font-medium text-gray-900 mb-2">
-              Currency
-            </label>
+          <div className="space-y-2">
+            <Label htmlFor="currency">Currency</Label>
             <select
               id="currency"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="usd">USD ($)</option>
               <option value="eur">EUR (€)</option>
@@ -140,18 +142,15 @@ export function AddPriceModal({ product, onClose, onSuccess }: AddPriceModalProp
 
           {isSubscription && (
             <>
-              <div>
-                <label
-                  htmlFor="interval"
-                  className="block text-base font-medium text-gray-900 mb-2"
-                >
-                  Billing Interval *
-                </label>
+              <div className="space-y-2">
+                <Label htmlFor="interval">
+                  Billing Interval <span className="text-destructive">*</span>
+                </Label>
                 <select
                   id="interval"
                   value={interval}
                   onChange={(e) => setInterval(e.target.value)}
-                  className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="day">Daily</option>
                   <option value="week">Weekly</option>
@@ -160,22 +159,16 @@ export function AddPriceModal({ product, onClose, onSuccess }: AddPriceModalProp
                 </select>
               </div>
 
-              <div>
-                <label
-                  htmlFor="intervalCount"
-                  className="block text-base font-medium text-gray-900 mb-2"
-                >
-                  Interval Count
-                </label>
-                <input
+              <div className="space-y-2">
+                <Label htmlFor="intervalCount">Interval Count</Label>
+                <Input
                   id="intervalCount"
                   type="number"
                   min="1"
                   value={intervalCount}
                   onChange={(e) => setIntervalCount(e.target.value)}
-                  className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <p className="mt-2 text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Charge every {intervalCount} {interval}
                   {parseInt(intervalCount) > 1 ? "s" : ""}
                 </p>
@@ -183,8 +176,8 @@ export function AddPriceModal({ product, onClose, onSuccess }: AddPriceModalProp
             </>
           )}
 
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-            <p className="text-base text-blue-900">
+          <Alert>
+            <AlertDescription>
               {isSubscription ? (
                 <>
                   Clients will be charged <strong>${amount || "0.00"}</strong> every{" "}
@@ -197,28 +190,19 @@ export function AddPriceModal({ product, onClose, onSuccess }: AddPriceModalProp
                   Clients will pay <strong>${amount || "0.00"}</strong> for this 1:1 session
                 </>
               )}
-            </p>
-          </div>
+            </AlertDescription>
+          </Alert>
 
-          <div className="flex flex-col sm:flex-row gap-3 pt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="w-full sm:flex-1 px-6 py-3 text-base border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 font-medium"
-            >
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !amount}
-              className="w-full sm:flex-1 px-6 py-3 text-base bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-            >
+            </Button>
+            <Button type="submit" disabled={loading || !amount}>
               {loading ? "Adding..." : "Add Price"}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

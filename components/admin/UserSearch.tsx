@@ -95,7 +95,7 @@ export function UserSearch() {
   return (
     <div className="space-y-6">
       {/* Search Form */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-card rounded-lg shadow border border-border p-6">
         <form onSubmit={handleSearch} className="flex gap-3">
           <input
             type="email"
@@ -125,39 +125,39 @@ export function UserSearch() {
       {userDetails && (
         <div className="space-y-6">
           {/* User Info */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-card rounded-lg shadow border border-border p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="text-xl font-bold text-gray-900">
+                <h3 className="text-xl font-bold text-foreground">
                   {userDetails.user.name || "No name"}
                 </h3>
-                <p className="text-gray-600">{userDetails.user.email}</p>
+                <p className="text-muted-foreground">{userDetails.user.email}</p>
               </div>
-              <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+              <span className="px-3 py-1 rounded-full text-sm font-medium bg-secondary text-secondary-foreground">
                 {userDetails.user.role}
               </span>
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Joined: {new Date(userDetails.user.createdAt).toLocaleDateString()}
             </p>
           </div>
 
           {/* Orders */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-card rounded-lg shadow border border-border p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">
               Orders ({userDetails.orders.length})
             </h3>
             {userDetails.orders.length === 0 ? (
-              <p className="text-gray-600">No orders</p>
+              <p className="text-muted-foreground">No orders</p>
             ) : (
               <div className="space-y-2">
                 {userDetails.orders.map((order) => (
-                  <div key={order.id} className="border border-gray-200 rounded p-3">
+                  <div key={order.id} className="border border-border rounded p-3">
                     <div className="flex justify-between">
-                      <span className="font-medium">{order.product.name}</span>
-                      <span className="font-semibold">${(order.amountCents / 100).toFixed(2)}</span>
+                      <span className="font-medium text-foreground">{order.product.name}</span>
+                      <span className="font-semibold text-foreground">${(order.amountCents / 100).toFixed(2)}</span>
                     </div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       {order.status} • {new Date(order.createdAt).toLocaleDateString()}
                     </p>
                   </div>
@@ -167,29 +167,29 @@ export function UserSearch() {
           </div>
 
           {/* Subscriptions */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-card rounded-lg shadow border border-border p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">
               Subscriptions ({userDetails.subscriptions.length})
             </h3>
             {userDetails.subscriptions.length === 0 ? (
-              <p className="text-gray-600">No subscriptions</p>
+              <p className="text-muted-foreground">No subscriptions</p>
             ) : (
               <div className="space-y-2">
                 {userDetails.subscriptions.map((sub) => (
-                  <div key={sub.id} className="border border-gray-200 rounded p-3">
+                  <div key={sub.id} className="border border-border rounded p-3">
                     <div className="flex justify-between">
-                      <span className="font-medium">{sub.product.name}</span>
+                      <span className="font-medium text-foreground">{sub.product.name}</span>
                       <span
                         className={`px-2 py-1 rounded-full text-xs ${
                           sub.status === "active"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                            : "bg-secondary text-secondary-foreground"
                         }`}
                       >
                         {sub.status}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Renews: {new Date(sub.currentPeriodEnd).toLocaleDateString()}
                     </p>
                   </div>
@@ -199,9 +199,9 @@ export function UserSearch() {
           </div>
 
           {/* Entitlements */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-card rounded-lg shadow border border-border p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-foreground">
                 Entitlements ({userDetails.entitlements.length})
               </h3>
               <button
@@ -213,15 +213,15 @@ export function UserSearch() {
             </div>
 
             {userDetails.entitlements.length === 0 ? (
-              <p className="text-gray-600">No entitlements</p>
+              <p className="text-muted-foreground">No entitlements</p>
             ) : (
               <div className="space-y-2">
                 {userDetails.entitlements.map((ent) => (
-                  <div key={ent.id} className="border border-gray-200 rounded p-3">
+                  <div key={ent.id} className="border border-border rounded p-3">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <span className="font-medium">{ent.product.name}</span>
-                        <p className="text-sm text-gray-500">
+                        <span className="font-medium text-foreground">{ent.product.name}</span>
+                        <p className="text-sm text-muted-foreground">
                           Source: {ent.sourceType} •
                           {ent.validUntil
                             ? ` Expires: ${new Date(ent.validUntil).toLocaleDateString()}`
@@ -254,13 +254,13 @@ export function UserSearch() {
         </div>
       )}
 
-      {showGrantModal && userDetails && (
+      {userDetails && (
         <GrantEntitlementModal
           userId={userDetails.user.id}
           userEmail={userDetails.user.email}
-          onClose={() => setShowGrantModal(false)}
+          open={showGrantModal}
+          onOpenChange={setShowGrantModal}
           onSuccess={() => {
-            setShowGrantModal(false);
             handleSearch(new Event("submit") as any);
           }}
         />

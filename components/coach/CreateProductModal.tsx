@@ -2,13 +2,27 @@
 
 import { useState } from "react";
 import { ProductType } from "@prisma/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 interface CreateProductModalProps {
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }
 
-export function CreateProductModal({ onClose, onSuccess }: CreateProductModalProps) {
+export function CreateProductModal({ open, onOpenChange, onSuccess }: CreateProductModalProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState<ProductType>(ProductType.one_on_one);
@@ -37,7 +51,13 @@ export function CreateProductModal({ onClose, onSuccess }: CreateProductModalPro
         throw new Error(data.error || "Failed to create product");
       }
 
+      toast.success("Product created successfully!");
       onSuccess();
+      onOpenChange(false);
+      // Reset form
+      setName("");
+      setDescription("");
+      setType(ProductType.one_on_one);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create product");
       setLoading(false);
@@ -45,102 +65,79 @@ export function CreateProductModal({ onClose, onSuccess }: CreateProductModalPro
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 sm:p-8 my-8 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-start mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Create Product</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 p-1"
-            aria-label="Close"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Create Product</DialogTitle>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-3">
-              <p className="text-base text-red-800">{error}</p>
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
-          <div>
-            <label htmlFor="name" className="block text-base font-medium text-gray-900 mb-2">
-              Product Name *
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="name">
+              Product Name <span className="text-destructive">*</span>
+            </Label>
+            <Input
               id="name"
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="e.g., Weekly Fitness Program"
             />
           </div>
 
-          <div>
-            <label htmlFor="description" className="block text-base font-medium text-gray-900 mb-2">
-              Description
-            </label>
-            <textarea
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
               id="description"
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Describe what clients will get..."
             />
           </div>
 
-          <div>
-            <label htmlFor="type" className="block text-base font-medium text-gray-900 mb-2">
-              Product Type *
-            </label>
+          <div className="space-y-2">
+            <Label htmlFor="type">
+              Product Type <span className="text-destructive">*</span>
+            </Label>
             <select
               id="type"
               value={type}
               onChange={(e) => setType(e.target.value as ProductType)}
-              className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value={ProductType.subscription}>Subscription (Recurring)</option>
               <option value={ProductType.one_on_one}>1:1 Session (One-time)</option>
             </select>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               {type === ProductType.subscription
                 ? "Clients will be charged automatically at regular intervals"
                 : "Clients pay once for a single coaching session"}
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 pt-6">
-            <button
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
               type="button"
-              onClick={onClose}
+              variant="outline"
+              onClick={() => onOpenChange(false)}
               disabled={loading}
-              className="w-full sm:flex-1 px-6 py-3 text-base border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 font-medium"
             >
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !name.trim()}
-              className="w-full sm:flex-1 px-6 py-3 text-base bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-            >
+            </Button>
+            <Button type="submit" disabled={loading || !name.trim()}>
               {loading ? "Creating..." : "Create Product"}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

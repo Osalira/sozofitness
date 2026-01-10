@@ -50,29 +50,29 @@ export default async function BookingPage({ params }: BookingPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <ClientNav userName={session.user.name} userEmail={session.user.email} />
 
       <main className="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
               Schedule Your Session
             </h1>
-            <p className="text-sm sm:text-base text-gray-600">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Book your {order.product.name} with {order.coach.user.name || "your coach"}
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8">
+          <div className="bg-card rounded-lg shadow-lg p-6 sm:p-8 border border-border">
             <BookingCalendar orderId={order.id} coachId={order.coachId} />
           </div>
 
-          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="text-sm sm:text-base font-semibold text-blue-900 mb-2">
+          <div className="mt-6 bg-primary/10 border border-primary rounded-lg p-4">
+            <h3 className="text-sm sm:text-base font-semibold text-primary mb-2">
               📅 Booking Information
             </h3>
-            <ul className="text-sm sm:text-base text-blue-800 space-y-1">
+            <ul className="text-sm sm:text-base text-muted-foreground space-y-1">
               <li>• Sessions are 60 minutes long</li>
               <li>• You'll receive a Zoom meeting link after booking</li>
               <li>• Reminders sent 5 days and 24 hours before your session</li>

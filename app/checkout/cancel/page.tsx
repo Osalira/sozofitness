@@ -23,12 +23,12 @@ export default async function CheckoutCancelPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="max-w-md w-full bg-card rounded-lg shadow-lg border border-border p-8 text-center">
         <div className="mb-6">
-          <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
+          <div className="mx-auto w-16 h-16 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center">
             <svg
-              className="w-10 h-10 text-yellow-600"
+              className="w-10 h-10 text-yellow-600 dark:text-yellow-100"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -43,8 +43,8 @@ export default async function CheckoutCancelPage({
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Checkout Canceled</h1>
-        <p className="text-gray-600 mb-8">
+        <h1 className="text-2xl font-bold text-foreground mb-4">Checkout Canceled</h1>
+        <p className="text-muted-foreground mb-8">
           Your payment was canceled. No charges were made to your account.
         </p>
 
@@ -52,20 +52,20 @@ export default async function CheckoutCancelPage({
           {product_id && (
             <Link
               href={`/p/${product_id}`}
-              className="block w-full bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 font-medium transition-colors"
+              className="block w-full bg-primary text-primary-foreground px-6 py-3 rounded-md hover:bg-primary/90 font-medium transition-colors"
             >
               Try Again
             </Link>
           )}
           <Link
             href="/client"
-            className="block w-full border border-gray-300 text-gray-700 px-6 py-3 rounded-md hover:bg-gray-50 font-medium transition-colors"
+            className="block w-full border border-input text-foreground px-6 py-3 rounded-md hover:bg-accent font-medium transition-colors"
           >
             Back to Dashboard
           </Link>
         </div>
 
-        <div className="mt-8 text-sm text-gray-600">
+        <div className="mt-8 text-sm text-muted-foreground">
           <p>Need help? Contact the coach if you're having trouble with checkout.</p>
         </div>
       </div>

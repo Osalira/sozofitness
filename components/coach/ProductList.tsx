@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { ProductType } from "@prisma/client";
 import { CreateProductModal } from "./CreateProductModal";
 import { AddPriceModal } from "./AddPriceModal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface Price {
   id: string;
@@ -91,15 +93,15 @@ export function ProductList() {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="text-gray-600">Loading products...</div>
+        <div className="text-muted-foreground">Loading products...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">{error}</p>
+      <div className="bg-destructive/10 border border-destructive rounded-lg p-4">
+        <p className="text-destructive">{error}</p>
       </div>
     );
   }
@@ -108,21 +110,18 @@ export function ProductList() {
     <div>
       {/* Create Product Button */}
       <div className="mb-6">
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-        >
+        <Button onClick={() => setShowCreateModal(true)} size="lg">
           + Create Product
-        </button>
+        </Button>
       </div>
 
       {/* Products List */}
       {products.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <p className="text-gray-600 mb-4">You haven't created any products yet.</p>
+        <div className="bg-card rounded-lg shadow p-8 text-center border border-border">
+          <p className="text-muted-foreground mb-4">You haven't created any products yet.</p>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="text-blue-600 hover:text-blue-500 font-medium"
+            className="text-primary hover:text-primary/90 font-medium"
           >
             Create your first product →
           </button>
@@ -130,39 +129,35 @@ export function ProductList() {
       ) : (
         <div className="space-y-6">
           {products.map((product) => (
-            <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div key={product.id} className="bg-card rounded-lg shadow-md overflow-hidden border border-border">
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2 flex-wrap">
-                      <h3 className="text-xl font-semibold text-gray-900">{product.name}</h3>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${
-                          product.type === "subscription"
-                            ? "bg-purple-100 text-purple-800"
-                            : "bg-green-100 text-green-800"
-                        }`}
-                      >
+                      <h3 className="text-xl font-bold text-foreground">{product.name}</h3>
+                      <Badge variant={product.type === "subscription" ? "default" : "info"}>
                         {product.type === "subscription" ? "Subscription" : "1:1 Session"}
-                      </span>
+                      </Badge>
                       {!product.isActive && (
-                        <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-800">
+                        <Badge variant="outline">
                           Inactive
-                        </span>
+                        </Badge>
                       )}
                     </div>
                     {product.description && (
-                      <p className="text-gray-600 text-sm">{product.description}</p>
+                      <p className="text-muted-foreground text-sm">{product.description}</p>
                     )}
-                    <div className="mt-3 flex items-center gap-2">
-                      <button
+                    <div className="mt-3 flex items-center gap-3">
+                      <Button
+                        variant="link"
+                        size="sm"
                         onClick={() => copyProductLink(product.id)}
-                        className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                        className="p-0 h-auto"
                       >
                         {copiedId === product.id ? (
                           <>
                             <svg
-                              className="w-4 h-4"
+                              className="w-4 h-4 mr-1"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -179,7 +174,7 @@ export function ProductList() {
                         ) : (
                           <>
                             <svg
-                              className="w-4 h-4"
+                              className="w-4 h-4 mr-1"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -191,16 +186,16 @@ export function ProductList() {
                                 d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                               />
                             </svg>
-                            Copy Link to Share
+                            Copy Link
                           </>
                         )}
-                      </button>
-                      <span className="text-xs text-gray-400">•</span>
+                      </Button>
+                      <span className="text-muted-foreground">•</span>
                       <a
                         href={`/p/${product.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-gray-600 hover:text-gray-900"
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
                       >
                         Preview →
                       </a>
@@ -209,45 +204,49 @@ export function ProductList() {
                 </div>
 
                 {/* Prices */}
-                <div className="mt-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-sm font-semibold text-gray-700">Pricing Options</h4>
-                    <button
-                      onClick={() => {
-                        setSelectedProduct(product);
-                        setShowAddPriceModal(true);
-                      }}
-                      className="text-sm text-blue-600 hover:text-blue-500"
-                    >
-                      + Add Price
-                    </button>
-                  </div>
-
-                  {product.prices.length === 0 ? (
-                    <div className="bg-gray-50 rounded-md p-4 text-center">
-                      <p className="text-sm text-gray-600">No prices set yet</p>
-                      <button
+                  <div className="mt-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <h4 className="text-sm font-bold text-foreground">Pricing Options</h4>
+                      <Button
+                        variant="link"
+                        size="sm"
                         onClick={() => {
                           setSelectedProduct(product);
                           setShowAddPriceModal(true);
                         }}
-                        className="text-sm text-blue-600 hover:text-blue-500 mt-2"
+                        className="p-0 h-auto"
                       >
-                        Add your first price →
-                      </button>
+                        + Add Price
+                      </Button>
                     </div>
-                  ) : (
+
+                    {product.prices.length === 0 ? (
+                      <div className="bg-muted rounded-md p-4 text-center">
+                        <p className="text-sm text-muted-foreground mb-2">No prices set yet</p>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedProduct(product);
+                            setShowAddPriceModal(true);
+                          }}
+                          className="p-0 h-auto"
+                        >
+                          Add your first price →
+                        </Button>
+                      </div>
+                    ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                       {product.prices.map((price) => (
                         <div
                           key={price.id}
-                          className="bg-gray-50 rounded-md p-4 border border-gray-200"
+                          className="bg-muted rounded-md p-4 border border-border"
                         >
-                          <p className="text-lg font-semibold text-gray-900">
+                          <p className="text-lg font-semibold text-foreground">
                             {formatPrice(price)}
                           </p>
                           {price.interval && (
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-muted-foreground mt-1">
                               Billed{" "}
                               {price.intervalCount === 1 ? "" : `every ${price.intervalCount} `}
                               {price.interval}
@@ -266,23 +265,21 @@ export function ProductList() {
       )}
 
       {/* Modals */}
-      {showCreateModal && (
-        <CreateProductModal
-          onClose={() => setShowCreateModal(false)}
-          onSuccess={handleProductCreated}
-        />
-      )}
+      <CreateProductModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        onSuccess={handleProductCreated}
+      />
 
-      {showAddPriceModal && selectedProduct && (
-        <AddPriceModal
-          product={selectedProduct}
-          onClose={() => {
-            setShowAddPriceModal(false);
-            setSelectedProduct(null);
-          }}
-          onSuccess={handlePriceAdded}
-        />
-      )}
+      <AddPriceModal
+        product={selectedProduct!}
+        open={showAddPriceModal && !!selectedProduct}
+        onOpenChange={(open) => {
+          setShowAddPriceModal(open);
+          if (!open) setSelectedProduct(null);
+        }}
+        onSuccess={handlePriceAdded}
+      />
     </div>
   );
 }

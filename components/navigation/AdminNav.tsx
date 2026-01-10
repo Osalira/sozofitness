@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface AdminNavProps {
   userName?: string | null;
@@ -27,11 +28,11 @@ export function AdminNav({ userName, userEmail }: AdminNavProps) {
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b-2 border-red-500">
+    <nav className="bg-card shadow-sm border-b-2 border-destructive">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link href="/admin" className="text-lg sm:text-xl font-bold text-red-600">
+            <Link href="/admin" className="text-lg sm:text-xl font-bold text-destructive">
               ADMIN
             </Link>
 
@@ -42,8 +43,8 @@ export function AdminNav({ userName, userEmail }: AdminNavProps) {
                   href={link.href}
                   className={`text-sm ${
                     isActive(link.href)
-                      ? "text-red-600 font-medium"
-                      : "text-gray-600 hover:text-gray-900"
+                      ? "text-destructive font-medium"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {link.label}
@@ -53,18 +54,20 @@ export function AdminNav({ userName, userEmail }: AdminNavProps) {
           </div>
 
           <div className="hidden md:flex md:items-center md:space-x-4">
-            <span className="text-sm text-gray-700 truncate max-w-[150px]">
+            <span className="text-sm text-muted-foreground truncate max-w-[150px]">
               {userName || userEmail}
             </span>
-            <Link href="/api/auth/signout" className="text-sm text-red-600 hover:text-red-500">
+            <ThemeToggle />
+            <Link href="/api/auth/signout" className="text-sm text-destructive hover:text-destructive/90">
               Sign out
             </Link>
           </div>
 
-          <div className="flex items-center md:hidden">
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-gray-600 hover:text-gray-900 p-2"
+              className="text-muted-foreground hover:text-foreground p-2"
             >
               {mobileMenuOpen ? (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +93,7 @@ export function AdminNav({ userName, userEmail }: AdminNavProps) {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 pb-3">
+          <div className="md:hidden border-t border-border pb-3">
             <div className="pt-2 pb-3 space-y-1">
               {navLinks.map((link) => (
                 <Link
@@ -99,24 +102,24 @@ export function AdminNav({ userName, userEmail }: AdminNavProps) {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 text-base font-medium ${
                     isActive(link.href)
-                      ? "text-red-600 bg-red-50"
-                      : "text-gray-600 hover:bg-gray-50"
+                      ? "text-destructive bg-destructive/10"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   }`}
                 >
                   {link.label}
                 </Link>
               ))}
             </div>
-            <div className="pt-3 border-t border-gray-200">
+            <div className="pt-3 border-t border-border">
               <div className="px-3 py-2">
-                <p className="text-sm text-gray-900 font-medium truncate">
+                <p className="text-sm text-foreground font-medium truncate">
                   {userName || userEmail}
                 </p>
               </div>
               <Link
                 href="/api/auth/signout"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-base font-medium text-red-600 hover:bg-gray-50"
+                className="block px-3 py-2 text-base font-medium text-destructive hover:bg-accent"
               >
                 Sign out
               </Link>

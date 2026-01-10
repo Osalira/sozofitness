@@ -92,25 +92,25 @@ export function CoachAppointmentList({ coachId }: CoachAppointmentListProps) {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="text-gray-600">Loading appointments...</div>
+        <div className="text-muted-foreground">Loading appointments...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">{error}</p>
+      <div className="bg-destructive/10 border border-destructive rounded-lg p-4">
+        <p className="text-destructive">{error}</p>
       </div>
     );
   }
 
   if (appointments.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-8 text-center">
+      <div className="bg-card rounded-lg shadow p-8 text-center border border-border">
         <div className="mb-4">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-12 w-12 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -123,8 +123,8 @@ export function CoachAppointmentList({ coachId }: CoachAppointmentListProps) {
             />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Appointments Yet</h3>
-        <p className="text-gray-600">
+        <h3 className="text-lg font-semibold text-foreground mb-2">No Appointments Yet</h3>
+        <p className="text-muted-foreground">
           When clients book 1:1 sessions with you, they'll appear here.
         </p>
       </div>
@@ -134,14 +134,14 @@ export function CoachAppointmentList({ coachId }: CoachAppointmentListProps) {
   return (
     <div className="space-y-4">
       {appointments.map((appointment) => (
-        <div key={appointment.id} className="bg-white rounded-lg shadow-md p-6">
+        <div key={appointment.id} className="bg-card rounded-lg shadow-md p-6 border border-border">
           <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
             <div className="flex-1">
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
                 {appointment.order.product.name}
               </h3>
 
-              <div className="space-y-2 text-sm sm:text-base text-gray-600">
+              <div className="space-y-2 text-sm sm:text-base text-muted-foreground">
                 <p>
                   <span className="font-medium">Client:</span>{" "}
                   {appointment.client.name || appointment.client.email}
@@ -163,12 +163,12 @@ export function CoachAppointmentList({ coachId }: CoachAppointmentListProps) {
                     href={appointment.zoomHostUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm sm:text-base font-medium"
+                    className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 text-sm sm:text-base font-medium"
                   >
                     Start Zoom Meeting (Host)
                   </a>
                   {appointment.zoomPassword && (
-                    <p className="text-xs sm:text-sm text-gray-500 mt-2">
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                       Password: {appointment.zoomPassword}
                     </p>
                   )}
@@ -176,8 +176,8 @@ export function CoachAppointmentList({ coachId }: CoachAppointmentListProps) {
               )}
 
               {!appointment.zoomHostUrl && (
-                <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-md p-3">
-                  <p className="text-sm text-yellow-800">
+                <div className="mt-4 bg-accent border border-accent rounded-md p-3">
+                  <p className="text-sm text-accent-foreground">
                     ⚠️ Zoom not configured - Meeting link unavailable
                   </p>
                 </div>
@@ -189,11 +189,11 @@ export function CoachAppointmentList({ coachId }: CoachAppointmentListProps) {
                 className={`px-3 py-1 rounded-full text-sm font-medium ${
                   appointment.status === "scheduled"
                     ? appointment.isRescheduled
-                      ? "bg-blue-100 text-blue-800"
-                      : "bg-green-100 text-green-800"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-accent text-accent-foreground"
                     : appointment.status === "canceled"
-                      ? "bg-red-100 text-red-800"
-                      : "bg-gray-100 text-gray-800"
+                      ? "bg-destructive/10 text-destructive"
+                      : "bg-muted text-muted-foreground"
                 }`}
               >
                 {appointment.status === "scheduled" && appointment.isRescheduled
@@ -204,7 +204,7 @@ export function CoachAppointmentList({ coachId }: CoachAppointmentListProps) {
               {appointment.status === "scheduled" && (
                 <button
                   onClick={() => handleCancel(appointment.id)}
-                  className="text-sm text-red-600 hover:text-red-700 font-medium"
+                  className="text-sm text-destructive hover:text-destructive/90 font-medium"
                 >
                   Cancel
                 </button>

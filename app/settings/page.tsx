@@ -8,7 +8,7 @@ export default async function SettingsPage() {
   const session = await requireAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {session.user.role === UserRole.coach ? (
         <CoachNav userName={session.user.name} userEmail={session.user.email} />
       ) : (
@@ -18,8 +18,8 @@ export default async function SettingsPage() {
       <main className="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Account Settings</h1>
-            <p className="mt-2 text-sm sm:text-base text-gray-600">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Account Settings</h1>
+            <p className="mt-2 text-sm sm:text-base text-muted-foreground">
               Manage your profile and notification preferences
             </p>
           </div>
