@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Email not configured. Set EMAIL_PROVIDER=sendgrid and SENDGRID_API_KEY in .env. See documentation for setup instructions.",
+            "Email not configured. Set EMAIL_PROVIDER=resend and RESEND_API_KEY in .env. See documentation for setup instructions.",
         },
         { status: 400 }
       );

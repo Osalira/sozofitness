@@ -57,7 +57,6 @@ enum NotificationStatus {
 
 enum NotificationChannel {
   email
-  sms
 }
 
 // ================================
@@ -70,9 +69,6 @@ model User {
   passwordHash    String?
   name            String?
   role            UserRole  @default(client)
-  phoneE164       String?   @db.VarChar(20) // E.164 format: +1234567890
-  smsOptIn        Boolean   @default(false)
-  phoneVerifiedAt DateTime? // For future OTP verification
   emailOptIn      Boolean   @default(true)
   preferredLocale String    @default("en") @db.VarChar(5) // "en" or "fr"
   createdAt       DateTime  @default(now())

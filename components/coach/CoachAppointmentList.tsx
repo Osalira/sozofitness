@@ -16,7 +16,6 @@ interface Appointment {
   client: {
     name: string | null;
     email: string;
-    phoneE164: string | null;
   };
   order: {
     product: {

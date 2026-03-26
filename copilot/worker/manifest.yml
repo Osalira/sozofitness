@@ -16,19 +16,12 @@ network:
   connect: true
 
 variables:
-  # Email (SendGrid)
-  EMAIL_PROVIDER: "sendgrid"
-  SENDGRID_FROM_EMAIL: "sozofitness1@gmail.com"
-
-  # SMS (Twilio) - optional. If you don't want SMS, remove these and don't set TWILIO_* secrets.
-  SMS_PROVIDER: "twilio"
-  # Must be E.164 format, e.g. +16045551234
-  TWILIO_FROM_NUMBER: "+17656663918"
+  # Email (Resend)
+  EMAIL_PROVIDER: "resend"
+  RESEND_FROM_EMAIL: "noreply@sozofitness.com"
 
 secrets:
   DATABASE_URL: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DATABASE_URL
-  SENDGRID_API_KEY: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/SENDGRID_API_KEY
-  TWILIO_ACCOUNT_SID: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/TWILIO_ACCOUNT_SID
-  TWILIO_AUTH_TOKEN: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/TWILIO_AUTH_TOKEN
+  RESEND_API_KEY: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/RESEND_API_KEY
 
 

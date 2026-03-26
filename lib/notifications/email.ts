@@ -1,4 +1,4 @@
-import sgMail from "@sendgrid/mail";
+import { Resend } from "resend";
 
 /**
  * Feature flag: Email sending enabled
@@ -6,14 +6,11 @@ import sgMail from "@sendgrid/mail";
 export const EMAIL_ENABLED = !!(
   process.env.EMAIL_PROVIDER &&
   process.env.EMAIL_PROVIDER !== "__PLACEHOLDER__" &&
-  process.env.SENDGRID_API_KEY &&
-  process.env.SENDGRID_API_KEY !== "__PLACEHOLDER__"
+  process.env.RESEND_API_KEY &&
+  process.env.RESEND_API_KEY !== "__PLACEHOLDER__"
 );
 
-// Initialize SendGrid if configured
-if (EMAIL_ENABLED && process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-}
+const resend = EMAIL_ENABLED ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export interface SendEmailParams {
   to: string;
@@ -32,47 +29,53 @@ export interface SendEmailResult {
  * Email sender abstraction
  */
 export class EmailSender {
-  private static fromEmail = process.env.SENDGRID_FROM_EMAIL || "noreply@sozofitness.com";
+  private static fromEmail = process.env.RESEND_FROM_EMAIL || "noreply@sozofitness.com";
 
   /**
-   * Send an email via SendGrid
+   * Send an email via Resend
    */
   static async send(params: SendEmailParams): Promise<SendEmailResult> {
     const { to, subject, text, html } = params;
 
-    if (!EMAIL_ENABLED) {
+    if (!EMAIL_ENABLED || !resend) {
       console.log("📧 [EMAIL NOT CONFIGURED] Would send email:");
       console.log(`   To: ${to}`);
       console.log(`   Subject: ${subject}`);
       console.log(`   Body: ${text}`);
       return {
         success: false,
-        error: "Email provider not configured. Set SENDGRID_API_KEY in .env",
+        error: "Email provider not configured. Set RESEND_API_KEY in .env",
       };
     }
 
     try {
-      const msg = {
-        to,
+      const { data, error } = await resend.emails.send({
         from: this.fromEmail,
+        to: [to],
         subject,
         text,
         html: html || text.replace(/\n/g, "<br>"),
-      };
+      });
 
-      const [response] = await sgMail.send(msg);
+      if (error) {
+        console.error("Failed to send email:", error);
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
 
       console.log(`✅ Email sent to ${to}: ${subject}`);
 
       return {
         success: true,
-        providerMessageId: response.headers["x-message-id"] as string,
+        providerMessageId: data?.id,
       };
     } catch (error: any) {
-      console.error("Failed to send email:", error.response?.body || error.message);
+      console.error("Failed to send email:", error.message);
       return {
         success: false,
-        error: error.response?.body?.errors?.[0]?.message || error.message,
+        error: error.message,
       };
     }
   }

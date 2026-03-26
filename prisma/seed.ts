@@ -245,8 +245,6 @@ async function main() {
       passwordHash: clientPassword,
       name: "John Smith",
       role: UserRole.client,
-      phoneE164: "+16045551234",
-      smsOptIn: true,
       emailOptIn: true,
     },
   });

@@ -228,25 +228,16 @@
     "notificationPreferences": "Notification Preferences",
     "emailNotifications": "Email Notifications",
     "emailNotificationsDesc": "Receive appointment reminders and updates via email",
-    "phoneNumber": "Phone Number",
-    "phoneFormat": "E.164 format required: +[country code][number] (e.g., +16045551234 for US/Canada)",
-    "smsNotifications": "SMS Notifications",
-    "smsNotificationsDesc": "Receive appointment reminders via text message",
-    "phoneRequired": "Phone number required",
-    "phoneRequiredDesc": "SMS notifications are enabled but no phone number is set. Please add your phone number above.",
     "saveChanges": "Save Changes",
     "saving": "Saving...",
     "settingsUpdated": "Settings updated successfully!",
     "aboutNotifications": "About Notifications",
     "aboutNotificationsDesc": [
       "You'll receive reminders 5 days and 24 hours before appointments",
-      "SMS reminders include meeting links for quick access",
-      "Reply STOP to any SMS to opt out",
       "Email notifications are sent to {email}"
     ],
     "testNotifications": "Test Notifications (Dev Only)",
-    "sendTestEmail": "Send Test Email",
-    "sendTestSms": "Send Test SMS"
+    "sendTestEmail": "Send Test Email"
   },
   "email": {
     "appointmentReminder": {

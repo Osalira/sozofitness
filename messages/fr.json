@@ -228,25 +228,16 @@
     "notificationPreferences": "Préférences de notification",
     "emailNotifications": "Notifications par e-mail",
     "emailNotificationsDesc": "Recevoir des rappels de rendez-vous et des mises à jour par e-mail",
-    "phoneNumber": "Numéro de téléphone",
-    "phoneFormat": "Format E.164 requis : +[code pays][numéro] (ex : +16045551234 pour US/Canada)",
-    "smsNotifications": "Notifications SMS",
-    "smsNotificationsDesc": "Recevoir des rappels de rendez-vous par message texte",
-    "phoneRequired": "Numéro de téléphone requis",
-    "phoneRequiredDesc": "Les notifications SMS sont activées mais aucun numéro de téléphone n'est défini. Veuillez ajouter votre numéro ci-dessus.",
     "saveChanges": "Enregistrer les modifications",
     "saving": "Enregistrement...",
     "settingsUpdated": "Paramètres mis à jour avec succès !",
     "aboutNotifications": "À propos des notifications",
     "aboutNotificationsDesc": [
       "Vous recevrez des rappels 5 jours et 24 heures avant les rendez-vous",
-      "Les rappels SMS incluent les liens de réunion pour un accès rapide",
-      "Répondez STOP à tout SMS pour vous désinscrire",
       "Les notifications par e-mail sont envoyées à {email}"
     ],
     "testNotifications": "Tester les notifications (Dev uniquement)",
-    "sendTestEmail": "Envoyer un e-mail de test",
-    "sendTestSms": "Envoyer un SMS de test"
+    "sendTestEmail": "Envoyer un e-mail de test"
   },
   "email": {
     "appointmentReminder": {

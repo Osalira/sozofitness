@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NotificationChannel, NotificationStatus } from "@prisma/client";
 import { EmailSender } from "@/lib/notifications/email";
-import { SmsSender } from "@/lib/notifications/sms";
 
 export class NotificationService {
   /**
@@ -53,20 +52,6 @@ export class NotificationService {
         subject: `Reminder: Your coaching session in ${label === "5d" ? "5 days" : "24 hours"}`,
         body: "", // Will be generated when sending
       });
-
-      // Schedule SMS reminder (if opted in)
-      if (appointment.client.smsOptIn && appointment.client.phoneE164) {
-        await this.createNotification({
-          appointmentId: appointment.id,
-          userId: appointment.clientId,
-          channel: NotificationChannel.sms,
-          toAddress: appointment.client.phoneE164,
-          scheduledFor,
-          idempotencyKey: `appt:${appointment.id}:reminder:${label}:sms`,
-          subject: null,
-          body: "", // Will be generated when sending
-        });
-      }
     }
 
     console.log(`✅ Scheduled reminders for appointment ${appointmentId}`);
@@ -158,45 +143,28 @@ export class NotificationService {
     const userLocale = (client?.preferredLocale === "fr" ? "fr" : "en") as "en" | "fr";
 
     try {
-      let result;
-
-      if (notification.channel === NotificationChannel.email) {
-        result = await EmailSender.sendAppointmentReminder({
-          to: notification.toAddress,
-          recipientName: clientName,
-          coachName,
-          appointmentTime,
-          productName,
-          zoomJoinUrl: appointment.zoomJoinUrl,
-          timeUntil,
-          locale: userLocale,
+      if (notification.channel !== NotificationChannel.email) {
+        await prisma.notification.update({
+          where: { id: notificationId },
+          data: {
+            status: NotificationStatus.skipped,
+            errorMessage: `Unsupported notification channel: ${notification.channel}`,
+          },
         });
-      } else if (notification.channel === NotificationChannel.sms) {
-        // Only send if user still has SMS opted in
-        if (!notification.user.smsOptIn || !notification.user.phoneE164) {
-          await prisma.notification.update({
-            where: { id: notificationId },
-            data: {
-              status: NotificationStatus.skipped,
-              errorMessage: "User has opted out of SMS or phone number removed",
-            },
-          });
-          console.log(`⏭️  Skipped SMS notification (user opted out): ${notificationId}`);
-          return;
-        }
-
-        result = await SmsSender.sendAppointmentReminder({
-          to: notification.toAddress,
-          recipientName: clientName,
-          coachName,
-          appointmentTime,
-          zoomJoinUrl: appointment.zoomJoinUrl,
-          timeUntil,
-          locale: userLocale,
-        });
-      } else {
-        throw new Error(`Unknown notification channel: ${notification.channel}`);
+        console.log(`⏭️  Skipped notification with unsupported channel: ${notificationId}`);
+        return;
       }
+
+      const result = await EmailSender.sendAppointmentReminder({
+        to: notification.toAddress,
+        recipientName: clientName,
+        coachName,
+        appointmentTime,
+        productName,
+        zoomJoinUrl: appointment.zoomJoinUrl,
+        timeUntil,
+        locale: userLocale,
+      });
 
       // Update notification status
       if (result.success) {

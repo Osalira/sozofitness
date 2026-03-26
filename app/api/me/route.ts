@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { validateE164Phone } from "@/lib/notifications/sms";
 
 /**
  * GET /api/me
@@ -23,9 +22,6 @@ export async function GET(req: NextRequest) {
         email: true,
         name: true,
         role: true,
-        phoneE164: true,
-        smsOptIn: true,
-        phoneVerifiedAt: true,
         emailOptIn: true,
       },
     });
@@ -54,33 +50,13 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { phoneE164, smsOptIn, emailOptIn, name, preferredLocale } = body;
+    const { emailOptIn, name, preferredLocale } = body;
 
     const updateData: any = {};
 
     // Update name if provided
     if (name !== undefined) {
       updateData.name = name?.trim() || null;
-    }
-
-    // Update phone number if provided
-    if (phoneE164 !== undefined) {
-      if (phoneE164 && !validateE164Phone(phoneE164)) {
-        return NextResponse.json(
-          { error: "Invalid phone number format. Must be E.164 format (e.g., +16045551234)" },
-          { status: 400 }
-        );
-      }
-      updateData.phoneE164 = phoneE164?.trim() || null;
-      // Clear verification if phone changed
-      if (phoneE164 !== session.user.id) {
-        updateData.phoneVerifiedAt = null;
-      }
-    }
-
-    // Update SMS opt-in if provided
-    if (smsOptIn !== undefined) {
-      updateData.smsOptIn = smsOptIn;
     }
 
     // Update email opt-in if provided
@@ -103,9 +79,6 @@ export async function PATCH(req: NextRequest) {
         email: true,
         name: true,
         role: true,
-        phoneE164: true,
-        smsOptIn: true,
-        phoneVerifiedAt: true,
         emailOptIn: true,
       },
     });

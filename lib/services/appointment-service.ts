@@ -118,7 +118,7 @@ export class AppointmentService {
       },
     });
 
-    // Schedule reminders (email + SMS if opted in)
+    // Schedule email reminders
     try {
       await NotificationService.scheduleAppointmentReminders(appointment.id);
     } catch (error) {
@@ -140,7 +140,7 @@ export class AppointmentService {
       },
       include: {
         client: {
-          select: { name: true, email: true, phoneE164: true },
+          select: { name: true, email: true },
         },
         order: {
           include: {
